@@ -21,6 +21,7 @@ import ConsentPage from "@/pages/public/ConsentPage";
 
 // Auth
 import LoginPage from "@/pages/auth/LoginPage";
+import PatientLogin from "@/pages/auth/PatientLogin";
 
 // Dashboards
 import SuperAdminDashboard from "@/pages/dashboard/SuperAdminDashboard";
@@ -28,6 +29,18 @@ import HospitalAdminDashboard from "@/pages/dashboard/HospitalAdminDashboard";
 import DoctorDashboard from "@/pages/dashboard/DoctorDashboard";
 import NurseDashboard from "@/pages/dashboard/NurseDashboard";
 import PatientDashboard from "@/pages/dashboard/PatientDashboard";
+import { ScrollToTop } from "@/components/ScrollToTop";
+import AppointmentList from "@/pages/dashboard/admin/AppointmentList";
+import BillingPage from "@/pages/dashboard/admin/BillingPage";
+import PharmacyPOS from "@/pages/dashboard/admin/PharmacyPOS";
+import SampleCollection from "@/pages/dashboard/lis/SampleCollection";
+import LabResults from "@/pages/dashboard/lis/LabResults";
+import RadiologyWorklist from "@/pages/dashboard/ris/RadiologyWorklist";
+import AdmissionDashboard from "@/pages/dashboard/ipd/AdmissionDashboard";
+import NursingStation from "@/pages/dashboard/nursing/NursingStation";
+import InventoryDashboard from "@/pages/dashboard/inventory/InventoryDashboard";
+import HrDashboard from "@/pages/dashboard/hr/HrDashboard";
+import AccountsDashboard from "@/pages/dashboard/accounts/AccountsDashboard";
 
 import NotFound from "@/pages/NotFound";
 
@@ -55,6 +68,7 @@ const App = () => (
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/patient/login" element={<PatientLogin />} />
 
           {/* Super Admin Dashboard */}
           <Route element={<DashboardLayout role="superadmin" userName="System Admin" />}>
@@ -62,9 +76,21 @@ const App = () => (
             <Route path="/superadmin/*" element={<SuperAdminDashboard />} />
           </Route>
 
+
+
           {/* Hospital Admin Dashboard */}
           <Route element={<DashboardLayout role="admin" userName="Admin User" />}>
             <Route path="/admin" element={<HospitalAdminDashboard />} />
+            <Route path="/admin/appointments" element={<AppointmentList />} />
+            <Route path="/admin/billing" element={<BillingPage />} />
+            <Route path="/admin/pharmacy" element={<PharmacyPOS />} />
+            <Route path="/admin/lis/samples" element={<SampleCollection />} />
+            <Route path="/admin/lis/results" element={<LabResults />} />
+            <Route path="/admin/ris/worklist" element={<RadiologyWorklist />} />
+            <Route path="/admin/ipd/admission" element={<AdmissionDashboard />} />
+            <Route path="/admin/inventory" element={<InventoryDashboard />} />
+            <Route path="/admin/hr" element={<HrDashboard />} />
+            <Route path="/admin/accounts" element={<AccountsDashboard />} />
             <Route path="/admin/*" element={<HospitalAdminDashboard />} />
           </Route>
 
@@ -77,6 +103,7 @@ const App = () => (
           {/* Nurse Dashboard */}
           <Route element={<DashboardLayout role="nurse" userName="Nurse Johnson" />}>
             <Route path="/nurse" element={<NurseDashboard />} />
+            <Route path="/nurse/station" element={<NursingStation />} />
             <Route path="/nurse/*" element={<NurseDashboard />} />
           </Route>
 
@@ -89,6 +116,7 @@ const App = () => (
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <ScrollToTop />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

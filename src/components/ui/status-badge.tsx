@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
-  status: "approved" | "pending" | "cancelled" | "active" | "completed" | "in-progress";
+  status: "approved" | "pending" | "cancelled" | "active" | "completed" | "in-progress" | "confirmed" | "no_show";
   className?: string;
 }
 
@@ -12,6 +12,8 @@ const statusStyles = {
   "in-progress": "bg-blue-100 text-blue-800 border-blue-200",
   active: "bg-blue-100 text-blue-800 border-blue-200",
   cancelled: "bg-red-100 text-red-800 border-red-200",
+  confirmed: "bg-green-100 text-green-800 border-green-200",
+  no_show: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
 const statusLabels = {
@@ -21,6 +23,8 @@ const statusLabels = {
   "in-progress": "In Progress",
   active: "Active",
   cancelled: "Cancelled",
+  confirmed: "Confirmed",
+  no_show: "No Show",
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

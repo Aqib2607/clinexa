@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -98,6 +98,13 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
   const location = useLocation();
   const navigate = useNavigate();
   const config = roleConfig[role];
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   const isActive = (href: string) => {
     if (href === `/${role}`) {
@@ -122,9 +129,8 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar flex flex-col transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-sidebar flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         {/* Sidebar Header */}
         <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-sidebar-border">
@@ -156,11 +162,10 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
             <Link
               key={item.name}
               to={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive(item.href)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent"
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive(item.href)
+                ? "bg-primary text-primary-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent"
+                }`}
               onClick={() => setSidebarOpen(false)}
             >
               <item.icon className="h-5 w-5" />
@@ -222,7 +227,7 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main ref={mainRef} className="flex-1 p-4 lg:p-6 overflow-auto">
           <Outlet />
         </main>
       </div>

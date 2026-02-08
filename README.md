@@ -1,73 +1,83 @@
-# Welcome to your Lovable project
+# Clinexa - Advanced Hospital Management System
 
-## Project info
+Clinexa is a comprehensive, modern, and production-ready Hospital Management System (HMS) designed to streamline clinical workflows, automate laboratory operations, and manage hospital administration with high efficiency.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Core Features & Modules
 
-## How can I edit this code?
+### 🏥 Clinical & Outpatient (OPD)
 
-There are several ways of editing your application.
+- **Patient Management**: Secure registration, medical history, and portal access.
+- **Appointment Booking**: Multi-step booking flow with department and doctor availability.
+- **Consultation**: Digital prescriptions, vital signs tracking, and clinical notes.
 
-**Use Lovable**
+### 🛌 Inpatient (IPD) & Nursing
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Ward Management**: Real-time bed occupancy tracking with graphical ward views.
+- **Nursing Station**: Vitals monitoring, nursing notes, and task management.
+- **Admission & Discharge**: Automated stay-duration billing and clearance validation.
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🔬 Diagnostics (LIS & RIS)
 
-**Use your preferred IDE**
+- **Lab Automation**: Machine integration via ASTM/HL7 protocols for automated result logging.
+- **Sample Tracking**: Barcode-based sample collection and status monitoring.
+- **Radiology**: Worklist management and digital reporting for imaging studies.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 💊 Pharmacy & Inventory
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **POS System**: Point of Sale for medicine dispensing with batch-wise stock tracking.
+- **Stock Management**: Supplier management, purchase orders, and multi-store inventory.
+- **IPD Issues**: Direct stock deduction for inpatient prescriptions.
 
-Follow these steps:
+### 💰 Finance & HR
+
+- **Billing System**: Centralized billing for OPD, IPD, and Pharmacy with discount management.
+- **Accounts**: Multi-ledger accounting with cost-center tagging and financial reporting.
+- **HR Management**: Employee shifts, leave workflows, and payroll integration.
+
+## 🛠 Tech Stack
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui.
+- **Backend**: Laravel (PHP), MySQL, Eloquent ORM.
+- **State Management**: React Query (TanStack Query) & Context API.
+- **UI Architecture**: Atomic components with `lucide-react` icons.
+
+## ⚙️ Installation & Setup
+
+### Prerequisites
+
+- Node.js (v18+)
+- PHP (v8.1+) & Composer
+- MySQL
+
+### Frontend Setup
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Run development server
 npm run dev
+
+# Build for production
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+### Backend Setup (Located in /backend)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
 
-**Use GitHub Codespaces**
+## 📈 Recent Improvements
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Type Safety**: Full TypeScript refactoring for robust frontend-backend alignment.
+- **UX**: Automatic scroll-to-top on navigation and persistent dashboard layouts.
+- **Security**: OTP-based patient login and time-limited secure report download links.
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+Built with pride for modern healthcare.

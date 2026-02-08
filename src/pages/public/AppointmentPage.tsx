@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, User, Stethoscope, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import api from "@/lib/api";
+import axios from "axios";
+import { toast } from "sonner";
 
 const steps = [
   { id: 1, title: "Department", icon: Stethoscope },
@@ -15,33 +18,20 @@ const steps = [
   { id: 4, title: "Details", icon: CheckCircle2 },
 ];
 
-const departments = [
-  "Cardiology", "Neurology", "Orthopedics", "Pediatrics", "Ophthalmology",
-  "Emergency Medicine", "General Medicine", "Dermatology", "Gastroenterology"
-];
-
-const doctors = {
-  "Cardiology": ["Dr. Sarah Mitchell", "Dr. William Davis"],
-  "Neurology": ["Dr. James Wilson", "Dr. Christopher Lee"],
-  "Orthopedics": ["Dr. Michael Brown"],
-  "Pediatrics": ["Dr. Emily Chen", "Dr. Amanda Martinez"],
-  "Ophthalmology": ["Dr. Rachel Green"],
-  "Emergency Medicine": ["Dr. David Kim"],
-  "General Medicine": ["Dr. David Kim"],
-  "Dermatology": ["Dr. Lisa Anderson"],
-  "Gastroenterology": ["Dr. Jennifer White"],
-};
-
 const timeSlots = [
-  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-  "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM"
+  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"
 ];
+
+import { Department, Doctor } from "@/types";
 
 export default function AppointmentPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    department: "",
-    doctor: "",
+    department_id: "" as string | number,
+    department_name: "", // For UI display
+    doctor_id: "" as string | number,
+    doctor_name: "", // For UI display
     date: "",
     time: "",
     name: "",
@@ -50,6 +40,31 @@ export default function AppointmentPage() {
     reason: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Data State
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+
+  // Fetch Departments on Load
+  useEffect(() => {
+    api.get('/departments')
+      .then(res => setDepartments(res.data))
+      .catch(err => console.error("Failed to load departments", err));
+  }, []);
+
+  // Fetch Doctors when Department Changes
+  useEffect(() => {
+    if (formData.department_id) {
+      // Fetch doctors for this department
+      // Using per_page=100 to get a reasonable list without pagination UI for now
+      api.get(`/doctors?department_id=${formData.department_id}&per_page=100`)
+        .then(res => setDoctors(res.data.data))
+        .catch(err => console.error("Failed to load doctors", err));
+    } else {
+      setDoctors([]);
+    }
+  }, [formData.department_id]);
 
   const handleNext = () => {
     if (currentStep < 4) setCurrentStep(currentStep + 1);
@@ -59,15 +74,46 @@ export default function AppointmentPage() {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+
+    try {
+      // Combine Date & Time
+      // Assuming backend accepts 'appointment_date' as YYYY-MM-DD HH:mm:ss
+      const appointmentDateTime = `${formData.date} ${formData.time}:00`;
+
+      const payload = {
+        patient_id: null, // Guest
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        department_id: formData.department_id,
+        doctor_id: formData.doctor_id,
+        appointment_date: appointmentDateTime,
+        symptoms: formData.reason
+      };
+
+      const res = await api.post('/appointments', payload);
+      console.log("Appointment Created:", res.data);
+      setSubmitted(true);
+      toast.success("Appointment booked successfully!");
+    } catch (error) {
+      console.error("Booking failed", error);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Failed to book appointment. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1: return formData.department !== "";
-      case 2: return formData.doctor !== "";
+      case 1: return formData.department_id !== "";
+      case 2: return formData.doctor_id !== "";
       case 3: return formData.date !== "" && formData.time !== "";
       case 4: return formData.name !== "" && formData.email !== "" && formData.phone !== "";
       default: return false;
@@ -91,8 +137,8 @@ export default function AppointmentPage() {
             <div className="bg-muted/50 rounded-xl p-6 mb-8 text-left max-w-sm mx-auto">
               <h3 className="font-semibold mb-4">Appointment Summary</h3>
               <div className="space-y-2 text-sm">
-                <p><span className="text-muted-foreground">Department:</span> {formData.department}</p>
-                <p><span className="text-muted-foreground">Doctor:</span> {formData.doctor}</p>
+                <p><span className="text-muted-foreground">Department:</span> {formData.department_name}</p>
+                <p><span className="text-muted-foreground">Doctor:</span> {formData.doctor_name}</p>
                 <p><span className="text-muted-foreground">Date:</span> {formData.date}</p>
                 <p><span className="text-muted-foreground">Time:</span> {formData.time}</p>
               </div>
@@ -171,19 +217,20 @@ export default function AppointmentPage() {
                   <p className="text-muted-foreground text-sm">Choose the medical department for your visit</p>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {departments.map((dept) => (
+                  {departments.length === 0 && <p>Loading departments...</p>}
+                  {departments.map((dept: Department) => (
                     <button
-                      key={dept}
+                      key={dept.id}
                       type="button"
-                      onClick={() => setFormData({ ...formData, department: dept, doctor: "" })}
+                      onClick={() => setFormData({ ...formData, department_id: dept.id, department_name: dept.name, doctor_id: "", doctor_name: "" })}
                       className={cn(
                         "p-4 rounded-xl border-2 text-left transition-all",
-                        formData.department === dept
+                        formData.department_id === dept.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       )}
                     >
-                      <span className="font-medium">{dept}</span>
+                      <span className="font-medium">{dept.name}</span>
                     </button>
                   ))}
                 </div>
@@ -195,28 +242,29 @@ export default function AppointmentPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold text-card-foreground mb-2">Select Doctor</h2>
-                  <p className="text-muted-foreground text-sm">Choose your preferred doctor in {formData.department}</p>
+                  <p className="text-muted-foreground text-sm">Choose your preferred doctor in {formData.department_name}</p>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {(doctors[formData.department as keyof typeof doctors] || []).map((doctor) => (
+                  {doctors.length === 0 && <p className="text-muted-foreground">No doctors found for this department.</p>}
+                  {doctors.map((doctor: Doctor) => (
                     <button
-                      key={doctor}
+                      key={doctor.id}
                       type="button"
-                      onClick={() => setFormData({ ...formData, doctor })}
+                      onClick={() => setFormData({ ...formData, doctor_id: doctor.id, doctor_name: doctor.user?.name || doctor.specialization })}
                       className={cn(
                         "p-6 rounded-xl border-2 text-left transition-all",
-                        formData.doctor === doctor
+                        formData.doctor_id === doctor.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       )}
                     >
                       <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center mb-3">
                         <span className="text-lg font-bold text-muted-foreground">
-                          {doctor.split(' ').pop()?.charAt(0)}
+                          {(doctor.user?.name || 'D').split(' ').pop()?.charAt(0)}
                         </span>
                       </div>
-                      <span className="font-medium block">{doctor}</span>
-                      <span className="text-sm text-muted-foreground">{formData.department}</span>
+                      <span className="font-medium block">{doctor.user?.name || 'Unknown Doctor'}</span>
+                      <span className="text-sm text-muted-foreground">{doctor.specialization}</span>
                     </button>
                   ))}
                 </div>
@@ -321,7 +369,7 @@ export default function AppointmentPage() {
                 type="button"
                 variant="outline"
                 onClick={handleBack}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || loading}
                 className="btn-transition"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -340,11 +388,19 @@ export default function AppointmentPage() {
               ) : (
                 <Button
                   type="submit"
-                  disabled={!isStepValid()}
+                  disabled={!isStepValid() || loading}
                   className="btn-transition"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Confirm Appointment
+                  {loading ? (
+                    <span className="flex items-center">
+                      <Clock className="animate-spin h-4 w-4 mr-2" /> Processing...
+                    </span>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Confirm Appointment
+                    </>
+                  )}
                 </Button>
               )}
             </div>
