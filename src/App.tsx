@@ -22,6 +22,7 @@ import ConsentPage from "@/pages/public/ConsentPage";
 // Auth
 import LoginPage from "@/pages/auth/LoginPage";
 import PatientLogin from "@/pages/auth/PatientLogin";
+import RegisterPage from "@/pages/auth/RegisterPage";
 
 // Dashboards
 import SuperAdminDashboard from "@/pages/dashboard/SuperAdminDashboard";
@@ -68,6 +69,7 @@ const App = () => (
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/patient/login" element={<PatientLogin />} />
 
           {/* Super Admin Dashboard */}

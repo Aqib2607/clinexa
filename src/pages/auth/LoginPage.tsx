@@ -173,6 +173,13 @@ export default function LoginPage() {
             </Link>
           </p>
 
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-primary hover:underline">
+              Register Now
+            </Link>
+          </p>
+
           <div className="mt-8 pt-8 border-t border-border text-center">
             <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               ← Return to Hospital Website
