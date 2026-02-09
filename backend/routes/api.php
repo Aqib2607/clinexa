@@ -3,6 +3,13 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Authentication Routes (No auth required)
+Route::prefix('auth')->group(function () {
+    Route::post('register', [\App\Http\Controllers\Api\AuthController::class, 'register']);
+    Route::post('login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
+    Route::post('logout', [\App\Http\Controllers\Api\AuthController::class, 'logout'])->middleware('auth:sanctum');
+});
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -68,11 +75,40 @@ Route::prefix('ipd')->group(function () {
     Route::post('admissions/{id}/discharge', [\App\Http\Controllers\Api\IpdController::class, 'discharge']);
 });
 
-Route::prefix('nursing')->group(function () {
-    Route::get('worklist', [\App\Http\Controllers\Api\NursingController::class, 'indexWorklist']);
-    Route::post('admissions/{id}/vitals', [\App\Http\Controllers\Api\NursingController::class, 'storeVitals']);
-    Route::post('admissions/{id}/notes', [\App\Http\Controllers\Api\NursingController::class, 'storeNote']);
+// Notification Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
 });
+
+// Doctor Portal Routes - Doctor-specific CRUD operations
+Route::middleware('auth:sanctum')->prefix('doctor')->group(function () {
+    // Appointments Management
+    Route::get('/appointments', [\App\Http\Controllers\Api\DoctorPortalController::class, 'getAppointments']);
+    Route::post('/appointments', [\App\Http\Controllers\Api\DoctorPortalController::class, 'createAppointment']);
+    Route::put('/appointments/{id}', [\App\Http\Controllers\Api\DoctorPortalController::class, 'updateAppointment']);
+    Route::delete('/appointments/{id}/cancel', [\App\Http\Controllers\Api\DoctorPortalController::class, 'cancelAppointment']);
+
+    // Prescriptions Management
+    Route::get('/prescriptions', [\App\Http\Controllers\Api\DoctorPortalController::class, 'getPrescriptions']);
+    Route::post('/prescriptions', [\App\Http\Controllers\Api\DoctorPortalController::class, 'createPrescription']);
+    Route::put('/prescriptions/{id}', [\App\Http\Controllers\Api\DoctorPortalController::class, 'updatePrescription']);
+    Route::delete('/prescriptions/{id}', [\App\Http\Controllers\Api\DoctorPortalController::class, 'deletePrescription']);
+
+    // Patient Management
+    Route::get('/patients', [\App\Http\Controllers\Api\DoctorPortalController::class, 'getPatients']);
+    Route::get('/patients/{patientId}/notes', [\App\Http\Controllers\Api\DoctorPortalController::class, 'getPatientNotes']);
+    Route::post('/patients/{patientId}/notes', [\App\Http\Controllers\Api\DoctorPortalController::class, 'createPatientNote']);
+    Route::put('/patients/{patientId}/notes/{noteId}', [\App\Http\Controllers\Api\DoctorPortalController::class, 'updatePatientNote']);
+
+    // Schedule Management
+    Route::get('/schedule', [\App\Http\Controllers\Api\DoctorPortalController::class, 'getSchedule']);
+    Route::post('/schedule', [\App\Http\Controllers\Api\DoctorPortalController::class, 'updateSchedule']);
+    Route::post('/schedule/block', [\App\Http\Controllers\Api\DoctorPortalController::class, 'blockTimeSlot']);
+    Route::delete('/schedule/{id}', [\App\Http\Controllers\Api\DoctorPortalController::class, 'deleteScheduleSlot']);
+});
+
 
 Route::prefix('ot')->group(function () {
     Route::get('bookings', [\App\Http\Controllers\Api\OtController::class, 'indexBookings']);
@@ -96,6 +132,8 @@ Route::prefix('inventory')->group(function () {
 Route::prefix('hr')->group(function () {
     Route::get('employees', [\App\Http\Controllers\Api\HrController::class, 'getEmployees']);
     Route::post('employees', [\App\Http\Controllers\Api\HrController::class, 'createEmployee']);
+    Route::put('employees/{id}', [\App\Http\Controllers\Api\HrController::class, 'updateEmployee']);
+    Route::delete('employees/{id}', [\App\Http\Controllers\Api\HrController::class, 'deleteEmployee']);
     Route::post('shifts', [\App\Http\Controllers\Api\HrController::class, 'createShift']);
     Route::post('leaves', [\App\Http\Controllers\Api\HrController::class, 'applyLeave']);
     Route::post('attendance', [\App\Http\Controllers\Api\HrController::class, 'markAttendance']);
@@ -124,9 +162,25 @@ Route::prefix('sms')->group(function () {
     Route::get('logs', [\App\Http\Controllers\Api\SmsController::class, 'getLogs']);
 });
 
-Route::prefix('patient')->group(function () {
-    Route::post('otp/request', [\App\Http\Controllers\Api\PatientPortalController::class, 'requestOtp']);
-    Route::post('otp/verify', [\App\Http\Controllers\Api\PatientPortalController::class, 'verifyOtp']);
+Route::middleware('auth:sanctum')->prefix('patient')->group(function () {
     Route::get('dashboard-data', [\App\Http\Controllers\Api\PatientPortalController::class, 'getDashboardData']);
     Route::get('download/{token}', [\App\Http\Controllers\Api\PatientPortalController::class, 'downloadSecure']);
+});
+
+Route::prefix('admin')->group(function () {
+    Route::get('stats', [\App\Http\Controllers\Api\AdminController::class, 'getDashboardStats']);
+    Route::get('reports', [\App\Http\Controllers\Api\AdminController::class, 'getReports']);
+    Route::get('reports/export/{type}', [\App\Http\Controllers\Api\AdminController::class, 'exportReportDetail']);
+});
+
+Route::prefix('settings')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\SettingsController::class, 'index']);
+    Route::post('/', [\App\Http\Controllers\Api\SettingsController::class, 'store']);
+});
+
+Route::prefix('system-updates')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\SystemUpdateController::class, 'index']);
+    Route::post('/', [\App\Http\Controllers\Api\SystemUpdateController::class, 'store']);
+    Route::put('/{id}', [\App\Http\Controllers\Api\SystemUpdateController::class, 'update']);
+    Route::delete('/{id}', [\App\Http\Controllers\Api\SystemUpdateController::class, 'destroy']);
 });

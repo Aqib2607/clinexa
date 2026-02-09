@@ -12,60 +12,14 @@ use Carbon\Carbon;
 
 class PatientPortalController extends Controller
 {
-    public function requestOtp(Request $request)
-    {
-        $validated = $request->validate(['mobile_number' => 'required|exists:patients,phone']); // Using 'phone' as per schema fix
-
-        // Generate OTP
-        $otp = rand(100000, 999999);
-
-        // Store OTP
-        PatientOtp::create([
-            'mobile_number' => $validated['mobile_number'],
-            'otp_code' => $otp, // Hash this in production!
-            'expires_at' => now()->addMinutes(10),
-        ]);
-
-        // Send OTP via SMS Controller (Internal Call)
-        // ... (Simulated here)
-
-        return response()->json(['message' => 'OTP sent to registered mobile number.', 'dev_hint' => $otp]);
-    }
-
-    public function verifyOtp(Request $request)
-    {
-        $validated = $request->validate([
-            'mobile_number' => 'required|exists:patients,phone',
-            'otp' => 'required|string'
-        ]);
-
-        $otpRecord = PatientOtp::where('mobile_number', $validated['mobile_number'])
-            ->where('otp_code', $validated['otp'])
-            ->where('is_used', false)
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if (!$otpRecord) {
-            return response()->json(['error' => 'Invalid or expired OTP'], 401);
-        }
-
-        $otpRecord->update(['is_used' => true]);
-
-        // Find Patient
-        $patient = Patient::where('phone', $validated['mobile_number'])->first();
-
-        // Issue Token (Simulated for Phase 6 as Sanctum not present)
-        $token = Str::random(60);
-        // In a real implementation without Sanctum, we'd save this to 'api_token' column
-        // $patient->update(['api_token' => $token]);
-
-        return response()->json(['token' => $token, 'patient' => $patient]);
-    }
 
     public function getReports(Request $request)
     {
-        // Require Patient Auth
-        $patient = $request->user();
+        $user = $request->user();
+        if (!$user) return response()->json(['error' => 'Unauthorized'], 401);
+
+        $patient = Patient::where('email', $user->email)->first();
+        if (!$patient) return response()->json(['error' => 'Patient record not found.'], 404);
 
         // Fetch Reports (Lab & Radiology)
         // Filter by 'finalized' status and 'paid' status (Strict Requirement)
@@ -113,32 +67,91 @@ class PatientPortalController extends Controller
 
         return response()->json(['content' => "Secure Content for {$link->resource_type} {$link->resource_id}"]);
     }
+
     public function getDashboardData(Request $request)
     {
-        // Simple Token Auth for Phase 6 Alignment
-        $token = $request->header('X-Patient-Token');
-        if (!$token) return response()->json(['error' => 'Unauthorized'], 401);
+        $user = $request->user();
+        if (!$user) return response()->json(['error' => 'Unauthorized'], 401);
 
-        // In real app, validate token against DB. Here we assume valid if present for demo, 
-        // or we could match against a stored token if we added that column. 
-        // For now, allow test token or any token.
+        $patient = Patient::where('email', $user->email)->first();
 
-        // Mock Data Response (Replacing complex joins for now to ensure UI works)
+        if (!$patient) {
+            return response()->json(['error' => 'Patient record not found.'], 404);
+        }
+
+        // Fetch Real Appointments
+        $appointments = \App\Models\Appointment::with(['doctor.user', 'doctor.department'])
+            ->where('patient_id', $patient->id)
+            ->where('appointment_date', '>=', now()) // only upcoming/recent? or all? Requirements say "expected data". Usually dashboard shows upcoming.
+            ->orderBy('appointment_date', 'asc')
+            ->limit(5)
+            ->get()
+            ->map(function ($appt) {
+                $appt->department = $appt->doctor->department;
+                return $appt;
+            });
+
+        // Fetch Real Prescriptions
+        $prescriptions = \App\Models\Prescription::with('doctor.user')
+            ->where('patient_id', $patient->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Fetch Real Reports (Lab & Radiology)
+        // Lab
+        $labResults = \App\Models\LabResult::whereHas('visit', function ($q) use ($patient) {
+            $q->where('patient_id', $patient->id);
+        })
+            ->with(['test', 'visit.doctor.user'])
+            ->whereNotNull('finalized_at')
+            ->orderBy('finalized_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($result) {
+                return [
+                    'date' => Carbon::parse($result->finalized_at)->format('Y-m-d'),
+                    'type' => 'Lab',
+                    'description' => $result->test->name ?? 'Lab Test',
+                    'doctor' => $result->visit->doctor->user->name ?? 'Unknown',
+                    'id' => $result->id
+                ];
+            });
+
+        // Radiology
+        $radiologyResults = \App\Models\RadiologyResult::whereHas('study.visit', function ($q) use ($patient) {
+            $q->where('patient_id', $patient->id);
+        })
+            ->with(['study', 'radiologist'])
+            ->whereNotNull('finalized_at')
+            ->orderBy('finalized_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($result) {
+                return [
+                    'date' => Carbon::parse($result->finalized_at)->format('Y-m-d'),
+                    'type' => 'Radiology',
+                    'description' => $result->study->study_name ?? 'Radiology Scan',
+                    'doctor' => $result->radiologist->name ?? 'Unknown', // radiologist is a User
+                    'id' => $result->id
+                ];
+            });
+
+        // Merge and Sort Reports
+        $reports = $labResults->merge($radiologyResults)->sortByDesc('date')->values()->take(5);
+
         return response()->json([
             'patient' => [
-                'name' => 'John Smith',
-                'dob' => '1980-03-15',
-                'blood_type' => 'A+',
-                'phone' => '+15551234567',
-                'email' => 'john@example.com',
-                'address' => '123 Main St'
+                'name' => $patient->name,
+                'dob' => $patient->dob ? $patient->dob->format('Y-m-d') : null,
+                'blood_type' => $patient->blood_group, // frontend expects blood_type, model has blood_group
+                'phone' => $patient->phone,
+                'email' => $patient->email,
+                'address' => $patient->address
             ],
-            'appointments' => \App\Models\Appointment::with(['doctor.user', 'department'])->limit(5)->get(),
-            'reports' => [
-                ['date' => '2026-01-28', 'type' => 'Lab', 'description' => 'CBC', 'doctor' => 'Dr. Mitchell'],
-                ['date' => '2026-01-20', 'type' => 'Radiology', 'description' => 'Chest X-Ray', 'doctor' => 'Dr. Wilson']
-            ],
-            'prescriptions' => \App\Models\Prescription::with('doctor.user')->limit(3)->get()
+            'appointments' => $appointments,
+            'reports' => $reports,
+            'prescriptions' => $prescriptions
         ]);
     }
 }

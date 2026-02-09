@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 
 const userRoles = [
-  { value: "superadmin", label: "Super Admin", redirect: "/superadmin" },
-  { value: "admin", label: "Hospital Admin", redirect: "/admin" },
+  { value: "super_admin", label: "Admin", redirect: "/admin" },
   { value: "doctor", label: "Doctor", redirect: "/doctor" },
   { value: "nurse", label: "Nurse", redirect: "/nurse" },
   { value: "patient", label: "Patient", redirect: "/patient" },
@@ -96,10 +95,11 @@ export default function LoginPage() {
             <div className="space-y-2">
               <Label htmlFor="role">Login As</Label>
               <Select
+                name="role"
                 value={formData.role}
                 onValueChange={(value) => setFormData({ ...formData, role: value })}
               >
-                <SelectTrigger className="bg-card focus-ring">
+                <SelectTrigger id="role" className="bg-card focus-ring">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
@@ -118,7 +118,9 @@ export default function LoginPage() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@example.com"
@@ -139,7 +141,9 @@ export default function LoginPage() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••"

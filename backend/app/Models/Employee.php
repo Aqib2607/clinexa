@@ -36,4 +36,9 @@ class Employee extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function shift()
+    {
+        return $this->belongsTo(EmployeeShift::class);
+    }
 }

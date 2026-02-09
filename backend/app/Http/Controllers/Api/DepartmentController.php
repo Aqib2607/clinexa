@@ -14,7 +14,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::where('is_active', true)->get();
+        $departments = Department::all();
         return response()->json($departments);
     }
 

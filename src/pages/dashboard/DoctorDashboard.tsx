@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { SystemUpdates } from "@/components/SystemUpdates";
 import {
   Users,
   Calendar,
@@ -22,14 +23,21 @@ const stats = [
   { title: "Next Appointment", value: "09:30 AM", icon: Clock, description: "John Smith" },
 ];
 
-const todaySchedule = [
-  { time: "09:00 AM", patient: "John Smith", type: "Follow-up", status: "completed", notes: "Routine checkup" },
-  { time: "09:30 AM", patient: "Emily Johnson", type: "Consultation", status: "in-progress", notes: "New patient" },
-  { time: "10:00 AM", patient: "Michael Davis", type: "Emergency", status: "pending", notes: "Chest pain" },
-  { time: "10:30 AM", patient: "Sarah Williams", type: "Follow-up", status: "pending", notes: "Post-surgery" },
-  { time: "11:00 AM", patient: "Robert Taylor", type: "Consultation", status: "pending", notes: "Referral" },
-  { time: "11:30 AM", patient: "Lisa Anderson", type: "Checkup", status: "pending", notes: "Annual physical" },
-];
+
+const todaySchedule: Array<{
+  time: string;
+  patient: string;
+  type: string;
+  status: "completed" | "pending" | "in-progress";
+  notes: string;
+}> = [
+    { time: "09:00 AM", patient: "John Smith", type: "Follow-up", status: "completed", notes: "Routine checkup" },
+    { time: "09:30 AM", patient: "Emily Johnson", type: "Consultation", status: "in-progress", notes: "New patient" },
+    { time: "10:00 AM", patient: "Michael Davis", type: "Emergency", status: "pending", notes: "Chest pain" },
+    { time: "10:30 AM", patient: "Sarah Williams", type: "Follow-up", status: "pending", notes: "Post-surgery" },
+    { time: "11:00 AM", patient: "Robert Taylor", type: "Consultation", status: "pending", notes: "Referral" },
+    { time: "11:30 AM", patient: "Lisa Anderson", type: "Checkup", status: "pending", notes: "Annual physical" },
+  ];
 
 const recentPatients = [
   { name: "John Smith", age: 45, condition: "Hypertension", lastVisit: "Today", status: "stable" },
@@ -56,6 +64,9 @@ export default function DoctorDashboard() {
           Quick Note
         </Button>
       </PageHeader>
+
+      {/* System Updates */}
+      <SystemUpdates />
 
       {/* Stats Grid */}
       <div className="dashboard-grid">
@@ -92,7 +103,7 @@ export default function DoctorDashboard() {
                     <p className="font-medium text-card-foreground truncate">{appointment.patient}</p>
                     <p className="text-sm text-muted-foreground">{appointment.type} · {appointment.notes}</p>
                   </div>
-                  <StatusBadge status={appointment.status as any} />
+                  <StatusBadge status={appointment.status} />
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="btn-transition">
                       View
@@ -138,10 +149,9 @@ export default function DoctorDashboard() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">{patient.lastVisit}</p>
-                    <p className={`text-xs font-medium capitalize ${
-                      patient.status === 'stable' ? 'text-success' : 
+                    <p className={`text-xs font-medium capitalize ${patient.status === 'stable' ? 'text-success' :
                       patient.status === 'improving' ? 'text-primary' : 'text-warning'
-                    }`}>
+                      }`}>
                       {patient.status}
                     </p>
                   </div>
@@ -163,11 +173,10 @@ export default function DoctorDashboard() {
               {alerts.map((alert, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border ${
-                    alert.type === 'critical' ? 'bg-destructive/5 border-destructive/20' :
+                  className={`p-3 rounded-lg border ${alert.type === 'critical' ? 'bg-destructive/5 border-destructive/20' :
                     alert.type === 'warning' ? 'bg-warning/5 border-warning/20' :
-                    'bg-muted/50 border-border'
-                  }`}
+                      'bg-muted/50 border-border'
+                    }`}
                 >
                   <p className="text-sm text-card-foreground">{alert.message}</p>
                   <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>

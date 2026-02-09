@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { SystemUpdates } from "@/components/SystemUpdates";
 import {
   Users,
   Activity,
@@ -24,36 +25,36 @@ const stats = [
 ];
 
 const assignedPatients = [
-  { 
-    name: "John Smith", 
-    room: "A-101", 
+  {
+    name: "John Smith",
+    room: "A-101",
     condition: "Post-Surgery",
     doctor: "Dr. Mitchell",
     vitalsStatus: "due",
     lastVitals: "2 hours ago",
     alerts: ["Medication at 10:00 AM"]
   },
-  { 
-    name: "Emily Johnson", 
-    room: "A-102", 
+  {
+    name: "Emily Johnson",
+    room: "A-102",
     condition: "Observation",
     doctor: "Dr. Wilson",
     vitalsStatus: "completed",
     lastVitals: "30 min ago",
     alerts: []
   },
-  { 
-    name: "Michael Davis", 
-    room: "A-103", 
+  {
+    name: "Michael Davis",
+    room: "A-103",
     condition: "Critical Care",
     doctor: "Dr. Brown",
     vitalsStatus: "due",
     lastVitals: "3 hours ago",
     alerts: ["IV fluid change", "Blood test scheduled"]
   },
-  { 
-    name: "Sarah Williams", 
-    room: "B-201", 
+  {
+    name: "Sarah Williams",
+    room: "B-201",
     condition: "Recovery",
     doctor: "Dr. Chen",
     vitalsStatus: "completed",
@@ -88,6 +89,9 @@ export default function NurseDashboard() {
           Record Vitals
         </Button>
       </PageHeader>
+
+      {/* System Updates */}
+      <SystemUpdates />
 
       {/* Stats Grid */}
       <div className="dashboard-grid">
@@ -167,10 +171,9 @@ export default function NurseDashboard() {
             <div className="space-y-3">
               {pendingTasks.map((task, index) => (
                 <div key={index} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className={`h-2 w-2 rounded-full mt-2 ${
-                    task.priority === 'high' ? 'bg-destructive' :
-                    task.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground'
-                  }`} />
+                  <div className={`h-2 w-2 rounded-full mt-2 ${task.priority === 'high' ? 'bg-destructive' :
+                      task.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground'
+                    }`} />
                   <div className="flex-1">
                     <p className="text-sm text-card-foreground">{task.task}</p>
                     <p className="text-xs text-muted-foreground">{task.time}</p>

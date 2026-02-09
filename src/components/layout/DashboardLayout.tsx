@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 
 interface NavItem {
   name: string;
@@ -28,24 +29,13 @@ interface NavItem {
 }
 
 interface DashboardLayoutProps {
-  role: "superadmin" | "admin" | "doctor" | "nurse" | "patient";
+  role: "super_admin" | "doctor" | "nurse" | "patient";
   userName?: string;
 }
 
 const roleConfig = {
-  superadmin: {
-    title: "Super Admin",
-    color: "bg-primary",
-    navItems: [
-      { name: "Dashboard", href: "/superadmin", icon: LayoutDashboard },
-      { name: "Hospitals", href: "/superadmin/hospitals", icon: Building2 },
-      { name: "Users", href: "/superadmin/users", icon: Users },
-      { name: "Audit Logs", href: "/superadmin/audit", icon: FileText },
-      { name: "Settings", href: "/superadmin/settings", icon: Settings },
-    ],
-  },
-  admin: {
-    title: "Hospital Admin",
+  super_admin: {
+    title: "Admin",
     color: "bg-primary",
     navItems: [
       { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -107,7 +97,8 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
   }, [location.pathname]);
 
   const isActive = (href: string) => {
-    if (href === `/${role}`) {
+    const isRoot = href === '/admin' || href === '/doctor' || href === '/nurse' || href === '/patient';
+    if (isRoot) {
       return location.pathname === href;
     }
     return location.pathname.startsWith(href);
@@ -115,6 +106,44 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
 
   const handleLogout = () => {
     navigate("/login");
+  };
+
+  // Mock notification data - replace with API call later
+  const mockNotifications = [
+    {
+      id: "1",
+      type: "info" as const,
+      title: "New appointment scheduled",
+      message: "Dr. Smith has a new appointment at 2:00 PM today",
+      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
+      read: false,
+    },
+    {
+      id: "2",
+      type: "warning" as const,
+      title: "System maintenance",
+      message: "Scheduled maintenance will occur tonight at 11:00 PM",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+      read: false,
+    },
+    {
+      id: "3",
+      type: "success" as const,
+      title: "Report generated",
+      message: "Monthly financial report has been generated successfully",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+      read: true,
+    },
+  ];
+
+  const handleNotificationClick = (id: string) => {
+    console.log("Notification clicked:", id);
+    // TODO: Mark notification as read and navigate to relevant page
+  };
+
+  const handleMarkAllRead = () => {
+    console.log("Mark all notifications as read");
+    // TODO: API call to mark all notifications as read
   };
 
   return (
@@ -201,6 +230,8 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
+                name="global-search"
+                id="global-search"
                 placeholder="Search..."
                 className="w-64 lg:w-80 pl-10 bg-muted/50"
               />
@@ -208,10 +239,11 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative p-2 text-muted-foreground hover:bg-accent rounded-lg transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
-            </button>
+            <NotificationDropdown
+              notifications={mockNotifications}
+              onNotificationClick={handleNotificationClick}
+              onMarkAllRead={handleMarkAllRead}
+            />
             <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
                 <span className="text-sm font-medium text-secondary-foreground">

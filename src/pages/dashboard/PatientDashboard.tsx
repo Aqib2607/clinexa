@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { SystemUpdates } from "@/components/SystemUpdates";
 import api from "@/lib/api";
 import { Loader2, Calendar, FileText, ClipboardList, User, Phone, Mail, MapPin, Download, Plus } from "lucide-react";
 import { Patient, Appointment, Prescription, LabResult } from "@/types";
@@ -61,6 +62,9 @@ export default function PatientDashboard() {
           </Link>
         </Button>
       </PageHeader>
+
+      {/* System Updates */}
+      <SystemUpdates />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

@@ -124,4 +124,52 @@ class HrController extends Controller
 
         return response()->json(['message' => 'Payroll generated', 'count' => count($payrolls)]);
     }
+    public function updateEmployee(Request $request, $id)
+    {
+        $employee = Employee::with('user')->findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $employee->user_id,
+            'employee_code' => ['required', \Illuminate\Validation\Rule::unique('employees')->ignore($employee->id)],
+            'designation' => 'required|string',
+            'join_date' => 'required|date',
+            'basic_salary' => 'required|numeric',
+            'shift_id' => 'nullable|exists:employee_shifts,id',
+            'is_active' => 'boolean'
+        ]);
+
+        return DB::transaction(function () use ($validated, $employee) {
+            $employee->user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+            ]);
+
+            $employee->update([
+                'employee_code' => $validated['employee_code'],
+                'designation' => $validated['designation'],
+                'join_date' => $validated['join_date'],
+                'basic_salary' => $validated['basic_salary'],
+                'shift_id' => $validated['shift_id'] ?? null,
+                'is_active' => $validated['is_active'] ?? $employee->is_active,
+            ]);
+
+            return response()->json($employee->load('user'));
+        });
+    }
+
+    public function deleteEmployee($id)
+    {
+        $employee = Employee::findOrFail($id);
+
+        DB::transaction(function () use ($employee) {
+            $user = $employee->user;
+            $employee->delete();
+            if ($user) {
+                $user->delete();
+            }
+        });
+
+        return response()->json(['message' => 'Employee deleted successfully']);
+    }
 }
