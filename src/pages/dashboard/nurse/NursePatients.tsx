@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,74 +13,34 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Users, Search, Activity, Bed, AlertCircle } from "lucide-react";
+import { Users, Search, Activity, Bed, AlertCircle, Loader2 } from "lucide-react";
 
-interface Patient {
+interface NursePatient {
     id: string;
+    patient_id: number;
     name: string;
-    age: number;
+    age: number | null;
     gender: string;
     ward: string;
-    bedNumber: string;
+    bed_number: string;
     condition: string;
-    status: "stable" | "critical" | "recovering";
-    lastVitals: string;
+    status: string;
+    doctor: string;
+    last_vitals: string;
+    admission_date: string;
 }
 
 export default function NursePatients() {
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Mock data - replace with API call
-    const patients: Patient[] = [
-        {
-            id: "1",
-            name: "John Doe",
-            age: 45,
-            gender: "Male",
-            ward: "ICU",
-            bedNumber: "ICU-101",
-            condition: "Post-surgery recovery",
-            status: "stable",
-            lastVitals: "2 hours ago",
+    const { data: patients = [], isLoading } = useQuery<NursePatient[]>({
+        queryKey: ["nurse-patients", searchQuery],
+        queryFn: async () => {
+            const params = searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : "";
+            const res = await api.get(`/nurse/patients${params}`);
+            return res.data;
         },
-        {
-            id: "2",
-            name: "Jane Smith",
-            age: 32,
-            gender: "Female",
-            ward: "General",
-            bedNumber: "GW-205",
-            condition: "Pneumonia",
-            status: "recovering",
-            lastVitals: "1 hour ago",
-        },
-        {
-            id: "3",
-            name: "Robert Johnson",
-            age: 58,
-            gender: "Male",
-            ward: "ICU",
-            bedNumber: "ICU-103",
-            condition: "Cardiac arrest",
-            status: "critical",
-            lastVitals: "30 minutes ago",
-        },
-        {
-            id: "4",
-            name: "Emily Davis",
-            age: 28,
-            gender: "Female",
-            ward: "Maternity",
-            bedNumber: "MAT-301",
-            condition: "Post-delivery",
-            status: "stable",
-            lastVitals: "3 hours ago",
-        },
-    ];
-
-    const filteredPatients = patients.filter((patient) =>
-        patient.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    });
 
     const criticalPatients = patients.filter((p) => p.status === "critical").length;
     const stablePatients = patients.filter((p) => p.status === "stable").length;
@@ -95,41 +58,32 @@ export default function NursePatients() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="My Patients"
                 description="Monitor and manage patients under your care"
-            >
-                <Button>
-                    <Users className="h-4 w-4 mr-2" />
-                    Assign Patient
-                </Button>
-            </PageHeader>
+            />
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard
-                    title="Total Patients"
-                    value={patients.length}
-                    icon={Users}
-                />
+                <StatCard title="Total Patients" value={patients.length} icon={Users} />
                 <StatCard
                     title="Critical"
                     value={criticalPatients}
                     icon={AlertCircle}
                     description="Requires immediate attention"
                 />
-                <StatCard
-                    title="Stable"
-                    value={stablePatients}
-                    icon={Activity}
-                />
-                <StatCard
-                    title="Beds Occupied"
-                    value={patients.length}
-                    icon={Bed}
-                />
+                <StatCard title="Stable" value={stablePatients} icon={Activity} />
+                <StatCard title="Beds Occupied" value={patients.length} icon={Bed} />
             </div>
 
             {/* Search */}
@@ -147,19 +101,26 @@ export default function NursePatients() {
 
             {/* Patient Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPatients.length === 0 ? (
-                    <div className="col-span-full text-center py-12 text-muted-foreground">
-                        No patients found
+                {patients.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                        <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+                        <p className="font-medium text-muted-foreground">No patients found</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {searchQuery
+                                ? "Try a different search term"
+                                : "There are currently no admitted patients"}
+                        </p>
                     </div>
                 ) : (
-                    filteredPatients.map((patient) => (
+                    patients.map((patient) => (
                         <Card key={patient.id} className="hover:shadow-lg transition-shadow">
                             <CardHeader>
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <CardTitle className="text-lg">{patient.name}</CardTitle>
                                         <CardDescription>
-                                            {patient.age} years • {patient.gender}
+                                            {patient.age ? `${patient.age} years` : "Age N/A"} •{" "}
+                                            {patient.gender}
                                         </CardDescription>
                                     </div>
                                     <span
@@ -179,11 +140,15 @@ export default function NursePatients() {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">Bed:</span>
-                                        <span className="font-medium">{patient.bedNumber}</span>
+                                        <span className="font-medium">{patient.bed_number}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground">Doctor:</span>
+                                        <span className="font-medium">{patient.doctor}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground">Last Vitals:</span>
-                                        <span className="font-medium">{patient.lastVitals}</span>
+                                        <span className="font-medium">{patient.last_vitals}</span>
                                     </div>
                                 </div>
                                 <div className="pt-2 border-t">
@@ -195,11 +160,11 @@ export default function NursePatients() {
                                     </p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="flex-1">
-                                        View Chart
+                                    <Button variant="outline" size="sm" className="flex-1" asChild>
+                                        <Link to="/nurse/patients">View Chart</Link>
                                     </Button>
-                                    <Button size="sm" className="flex-1">
-                                        Record Vitals
+                                    <Button size="sm" className="flex-1" asChild>
+                                        <Link to="/nurse/vitals">Record Vitals</Link>
                                     </Button>
                                 </div>
                             </CardContent>

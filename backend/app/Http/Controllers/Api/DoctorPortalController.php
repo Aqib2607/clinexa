@@ -8,10 +8,12 @@ use App\Http\Requests\DoctorPrescriptionRequest;
 use App\Models\Appointment;
 use App\Models\Prescription;
 use App\Models\PatientNote;
+use App\Models\Patient;
 use App\Models\DoctorSchedule;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class DoctorPortalController extends Controller
 {
@@ -20,7 +22,19 @@ class DoctorPortalController extends Controller
      */
     public function getAppointments(Request $request)
     {
-        $doctor = Auth::user();
+        $user = Auth::user();
+        \Illuminate\Support\Facades\Log::info('DoctorPortalController: getAppointments', [
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'has_doctor_relation' => $user->doctor ? 'yes' : 'no'
+        ]);
+
+        $doctor = $user->doctor;
+
+        if (!$doctor) {
+            \Illuminate\Support\Facades\Log::warning('DoctorPortalController: Doctor profile not found for user ' . $user->id);
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $query = Appointment::where('doctor_id', $doctor->id)
             ->with(['patient']);
@@ -46,9 +60,17 @@ class DoctorPortalController extends Controller
      */
     public function createAppointment(DoctorAppointmentRequest $request)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
+
+        // Generate unique appointment number
+        $appointmentNumber = 'APT' . date('Ymd') . str_pad(Appointment::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
 
         $appointment = Appointment::create([
+            'appointment_number' => $appointmentNumber,
             'doctor_id' => $doctor->id,
             'patient_id' => $request->patient_id,
             'appointment_date' => $request->appointment_date,
@@ -56,7 +78,7 @@ class DoctorPortalController extends Controller
             'duration' => $request->duration ?? 30,
             'reason' => $request->reason,
             'notes' => $request->notes,
-            'status' => $request->status ?? 'scheduled',
+            'status' => $request->status ?? 'pending',
         ]);
 
         return response()->json($appointment->load('patient'), 201);
@@ -67,7 +89,11 @@ class DoctorPortalController extends Controller
      */
     public function updateAppointment(DoctorAppointmentRequest $request, $id)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
         $appointment = Appointment::where('doctor_id', $doctor->id)->findOrFail($id);
 
         $appointment->update($request->validated());
@@ -80,7 +106,11 @@ class DoctorPortalController extends Controller
      */
     public function cancelAppointment($id)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
         $appointment = Appointment::where('doctor_id', $doctor->id)->findOrFail($id);
 
         $appointment->update(['status' => 'cancelled']);
@@ -93,7 +123,11 @@ class DoctorPortalController extends Controller
      */
     public function getPrescriptions(Request $request)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $query = Prescription::where('doctor_id', $doctor->id)
             ->with(['patient']);
@@ -111,7 +145,11 @@ class DoctorPortalController extends Controller
      */
     public function createPrescription(DoctorPrescriptionRequest $request)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $prescription = Prescription::create([
             'doctor_id' => $doctor->id,
@@ -130,7 +168,11 @@ class DoctorPortalController extends Controller
      */
     public function updatePrescription(DoctorPrescriptionRequest $request, $id)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
         $prescription = Prescription::where('doctor_id', $doctor->id)->findOrFail($id);
 
         $prescription->update([
@@ -148,7 +190,11 @@ class DoctorPortalController extends Controller
      */
     public function deletePrescription($id)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
         $prescription = Prescription::where('doctor_id', $doctor->id)->findOrFail($id);
 
         $prescription->delete();
@@ -161,14 +207,16 @@ class DoctorPortalController extends Controller
      */
     public function getPatients(Request $request)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         // Get patients who have appointments with this doctor
-        $query = User::where('role', 'patient')
-            ->whereHas('appointments', function ($q) use ($doctor) {
-                $q->where('doctor_id', $doctor->id);
-            })
-            ->with(['patient']);
+        $query = Patient::whereHas('appointments', function ($q) use ($doctor) {
+            $q->where('doctor_id', $doctor->id);
+        });
 
         // Search by name
         if ($request->has('search')) {
@@ -183,7 +231,11 @@ class DoctorPortalController extends Controller
      */
     public function getPatientNotes($patientId)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $notes = PatientNote::where('doctor_id', $doctor->id)
             ->where('patient_id', $patientId)
@@ -198,7 +250,11 @@ class DoctorPortalController extends Controller
      */
     public function createPatientNote(Request $request, $patientId)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $validated = $request->validate([
             'visit_date' => 'required|date',
@@ -225,7 +281,11 @@ class DoctorPortalController extends Controller
      */
     public function updatePatientNote(Request $request, $patientId, $noteId)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $note = PatientNote::where('doctor_id', $doctor->id)
             ->where('patient_id', $patientId)
@@ -252,7 +312,11 @@ class DoctorPortalController extends Controller
      */
     public function getSchedule()
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $schedule = DoctorSchedule::where('doctor_id', $doctor->id)
             ->orderByRaw("FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")
@@ -266,7 +330,11 @@ class DoctorPortalController extends Controller
      */
     public function updateSchedule(Request $request)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $validated = $request->validate([
             'schedules' => 'required|array',
@@ -298,7 +366,11 @@ class DoctorPortalController extends Controller
      */
     public function blockTimeSlot(Request $request)
     {
-        $doctor = Auth::user();
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
 
         $validated = $request->validate([
             'day_of_week' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
@@ -321,11 +393,204 @@ class DoctorPortalController extends Controller
      */
     public function deleteScheduleSlot($id)
     {
-        $doctor = Auth::user();
-        $schedule = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
+        $doctor = Auth::user()->doctor;
 
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
+        $schedule = DoctorSchedule::where('doctor_id', $doctor->id)->findOrFail($id);
         $schedule->delete();
 
         return response()->json(['message' => 'Schedule slot deleted successfully']);
+    }
+
+    /**
+     * Delete an appointment slot (only if it belongs to the doctor and is available)
+     */
+    public function deleteAppointmentSlot($id)
+    {
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
+
+        $slot = \App\Models\AppointmentSlot::where('doctor_id', $doctor->id)
+                                          ->where('id', $id)
+                                          ->where('status', 'available')
+                                          ->first();
+
+        if (!$slot) {
+            return response()->json(['message' => 'Slot not found or cannot be deleted'], 404);
+        }
+
+        $slot->delete();
+
+        return response()->json(['message' => 'Appointment slot deleted successfully']);
+    }
+
+    /**
+     * Replace all appointment slots for the doctor based on new schedule configuration
+     */
+    public function replaceAppointmentSlots(Request $request)
+    {
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 403);
+        }
+
+        $validated = $request->validate([
+            'schedules' => 'required|array',
+            'schedules.*.day_of_week' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'schedules.*.start_time' => 'required|date_format:H:i',
+            'schedules.*.end_time' => 'required|date_format:H:i',
+            'schedules.*.is_available' => 'required|boolean',
+            'schedules.*.slot_duration' => 'required|integer|min:15|max:120',
+            'week_start' => 'required|date',
+            'week_end' => 'required|date|after_or_equal:week_start',
+        ]);
+
+        $weekStart = \Carbon\Carbon::parse($validated['week_start'])->startOfDay();
+        $weekEnd = \Carbon\Carbon::parse($validated['week_end'])->endOfDay();
+
+        // Log the received schedules for debugging
+        \Illuminate\Support\Facades\Log::info('Received schedules:', $validated['schedules']);
+
+        // Delete all future appointment slots for this doctor (only those not yet booked)
+        \App\Models\AppointmentSlot::where('doctor_id', $doctor->id)
+            ->where('date', '>=', now()->format('Y-m-d'))
+            ->where('status', 'available')
+            ->delete();
+
+        // Also update schedule rules
+        DoctorSchedule::where('doctor_id', $doctor->id)->delete();
+
+        $createdSchedules = [];
+        $totalSlotsGenerated = 0;
+
+        // Create new schedules and generate slots
+        foreach ($validated['schedules'] as $scheduleData) {
+            \Illuminate\Support\Facades\Log::info("Processing schedule for {$scheduleData['day_of_week']}: is_available = " . ($scheduleData['is_available'] ? 'true' : 'false'));
+            // Save schedule rule
+            $schedule = DoctorSchedule::create([
+                'doctor_id' => $doctor->id,
+                'day_of_week' => $scheduleData['day_of_week'],
+                'start_time' => $scheduleData['start_time'],
+                'end_time' => $scheduleData['end_time'],
+                'is_available' => $scheduleData['is_available'],
+                'slot_duration' => $scheduleData['slot_duration'],
+            ]);
+            $createdSchedules[] = $schedule;
+
+            // Generate slots if day is available
+            if ($scheduleData['is_available']) {
+                // Use the provided week range for slot generation
+                $currentDate = $weekStart->copy();
+                
+                // Generate slots only for dates within the specified week
+                while ($currentDate->lte($weekEnd)) {
+                    // Check if this date matches the day of week
+                    if ($currentDate->format('l') === $scheduleData['day_of_week']) {
+                        $timeStart = explode(':', $scheduleData['start_time']);
+                        $timeEnd = explode(':', $scheduleData['end_time']);
+                        $currentSlotStart = $currentDate->copy()->setTime((int)$timeStart[0], (int)$timeStart[1], 0);
+                        $dayEndTime = $currentDate->copy()->setTime((int)$timeEnd[0], (int)$timeEnd[1], 0);
+                        $duration = (int)$scheduleData['slot_duration'];
+
+                        while ($currentSlotStart->lt($dayEndTime)) {
+                            $currentSlotEnd = $currentSlotStart->copy()->addMinutes($duration);
+
+                            if ($currentSlotEnd->gt($dayEndTime)) {
+                                break;
+                            }
+
+                            // Create slot
+                            \App\Models\AppointmentSlot::create([
+                                'doctor_id' => $doctor->id,
+                                'date' => $currentDate->format('Y-m-d'),
+                                'day_of_week' => $scheduleData['day_of_week'],
+                                'start_time' => $currentSlotStart->format('H:i:s'),
+                                'end_time' => $currentSlotEnd->format('H:i:s'),
+                                'capacity' => 1,
+                                'status' => 'available',
+                            ]);
+                            $totalSlotsGenerated++;
+
+                            $currentSlotStart->addMinutes($duration);
+                        }
+                    }
+                    
+                    $currentDate->addDay();
+                }
+            }
+        }
+
+        \Illuminate\Support\Facades\Log::info("Total slots generated: {$totalSlotsGenerated} for week {$validated['week_start']} to {$validated['week_end']}");
+        
+        return response()->json([
+            'message' => 'Schedule updated successfully for the specified week',
+            'slots_generated' => $totalSlotsGenerated,
+            'schedules' => $createdSchedules,
+            'week_start' => $validated['week_start'],
+            'week_end' => $validated['week_end'],
+        ], 201);
+    }
+
+    public function getProfile()
+    {
+        $user = Auth::user();
+        $doctor = $user->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 404);
+        }
+
+        return response()->json([
+            'user' => $user,
+            'doctor' => $doctor, // Should include bio now
+        ]);
+    }
+
+    /**
+     * Update doctor profile
+     */
+    public function updateProfile(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $doctor = $user->doctor;
+
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor profile not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'specialization' => 'required|string|max:255',
+            'license_number' => 'required|string|max:255',
+            'bio' => 'nullable|string',
+        ]);
+
+        // Update User
+        $user->update([
+            'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+            'phone' => $validated['phone'],
+        ]);
+
+        // Update Doctor
+        $doctor->update([
+            'specialization' => $validated['specialization'],
+            'license_number' => $validated['license_number'],
+            'bio' => $validated['bio'],
+        ]);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $user,
+            'doctor' => $doctor,
+        ]);
     }
 }

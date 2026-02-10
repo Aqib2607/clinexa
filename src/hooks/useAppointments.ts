@@ -10,7 +10,7 @@ export interface Appointment {
     duration: number;
     reason: string;
     notes?: string;
-    status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
+    status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
     patient?: {
         id: string;
         name: string;

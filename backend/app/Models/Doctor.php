@@ -19,7 +19,7 @@ class Doctor extends Model
         'consultation_fee',
         'experience_years',
         'is_active',
-        // 'bio', 'status' // removed
+        'bio',
     ];
 
     protected $casts = [

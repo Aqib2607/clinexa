@@ -14,7 +14,7 @@ class AppointmentSlotController extends Controller
      */
     public function index(Request $request)
     {
-        $query = AppointmentSlot::where('status', 'available');
+        $query = AppointmentSlot::query();
 
         if ($request->has('doctor_id')) {
             $query->where('doctor_id', $request->doctor_id);
@@ -24,7 +24,11 @@ class AppointmentSlotController extends Controller
             $query->where('date', $request->date);
         }
 
-        return response()->json($query->get());
+        if ($request->has('date_from') && $request->has('date_to')) {
+            $query->whereBetween('date', [$request->date_from, $request->date_to]);
+        }
+
+        return response()->json($query->orderBy('date')->orderBy('start_time')->get());
     }
 
     /**

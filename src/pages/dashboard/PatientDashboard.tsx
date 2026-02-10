@@ -7,7 +7,7 @@ import { SystemUpdates } from "@/components/SystemUpdates";
 import api from "@/lib/api";
 import { Loader2, Calendar, FileText, ClipboardList, User, Phone, Mail, MapPin, Download, Plus } from "lucide-react";
 import { Patient, Appointment, Prescription, LabResult } from "@/types";
-import axios from "axios";
+import { useAuthStore } from "@/hooks/useAuth";
 
 interface DashboardData {
   patient: Patient;
@@ -16,30 +16,31 @@ interface DashboardData {
   prescriptions: Prescription[];
 }
 
+import { useUser } from "@/hooks/useUser";
+
 export default function PatientDashboard() {
+  const { data: user } = useUser();
+  const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('patient_token');
-    if (!token) {
+    if (!isAuthenticated) {
       navigate('/patient/login');
       return;
     }
 
-    api.get('/patient/dashboard-data', {
-      headers: { 'X-Patient-Token': token }
-    })
+    api.get('/patient/dashboard-data')
       .then(res => {
         setData(res.data);
       })
       .catch(err => {
         console.error(err);
-        if (axios.isAxiosError(err) && err.response?.status === 401) navigate('/patient/login');
+        if (err?.response?.status === 401) navigate('/patient/login');
       })
       .finally(() => setLoading(false));
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
 
   if (loading) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -52,7 +53,7 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6 lg:space-y-8 animate-fade-in">
       <PageHeader
-        title={`Welcome, ${patient.name}`}
+        title={`Welcome, ${user?.name || patient.name}`}
         description="Manage your health records and appointments"
       >
         <Button className="btn-transition" asChild>

@@ -117,9 +117,9 @@ export default function DoctorsManagement() {
     const openEditModal = (doctor: Doctor) => {
         setCurrentDoctor(doctor);
         setFormData({
-            name: doctor.user.name,
-            email: doctor.user.email,
-            phone: doctor.user.phone || "",
+            name: doctor.user?.name || '',
+            email: doctor.user?.email || '',
+            phone: doctor.user?.phone || "",
             specialization: doctor.specialization,
             license_number: doctor.license_number || "",
             department_id: doctor.department_id.toString(),
@@ -178,9 +178,9 @@ export default function DoctorsManagement() {
     };
 
     const filteredDoctors = doctors.filter(doc =>
-        doc.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.department?.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (doc.user?.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (doc.specialization ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (doc.department?.name ?? '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const columns = [
@@ -189,8 +189,8 @@ export default function DoctorsManagement() {
             header: "Name",
             render: (row: Doctor) => (
                 <div>
-                    <p className="font-medium">{row.user.name}</p>
-                    <p className="text-xs text-muted-foreground">{row.user.email}</p>
+                    <p className="font-medium">{row.user?.name || 'N/A'}</p>
+                    <p className="text-xs text-muted-foreground">{row.user?.email || 'N/A'}</p>
                 </div>
             )
         },
@@ -203,7 +203,7 @@ export default function DoctorsManagement() {
         {
             key: "contact",
             header: "Contact",
-            render: (row: Doctor) => row.user.phone
+            render: (row: Doctor) => row.user?.phone || 'N/A'
         },
         {
             key: "actions",

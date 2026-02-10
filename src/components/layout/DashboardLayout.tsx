@@ -21,6 +21,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { useAuthStore } from "@/hooks/useAuth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 interface NavItem {
   name: string;
@@ -83,11 +86,38 @@ const roleConfig = {
   },
 };
 
-export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProps) {
+import { useUser } from "@/hooks/useUser.ts";
+
+export function DashboardLayout({ role: propRole, userName: propUserName = "User" }: DashboardLayoutProps) {
+  const { data: user, isLoading } = useUser();
+  const { logout, isAuthenticated, hasRole } = useAuthStore();
+  const queryClient = useQueryClient();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const config = roleConfig[role];
+
+  // Role guard: redirect if not authenticated or wrong role
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    if (user && user.role !== propRole) {
+      const roleRedirects: Record<string, string> = {
+        super_admin: '/admin',
+        doctor: '/doctor',
+        nurse: '/nurse',
+        patient: '/patient',
+      };
+      navigate(roleRedirects[user.role] || '/login', { replace: true });
+    }
+  }, [isAuthenticated, user, propRole, navigate]);
+
+  // Use user data if available, otherwise fall back to props
+  const role = user?.role || propRole;
+  const userName = isLoading ? "Loading..." : (user?.name || propUserName);
+
+  const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.patient;
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -104,46 +134,57 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
     return location.pathname.startsWith(href);
   };
 
-  const handleLogout = () => {
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    queryClient.clear();
+    navigate("/login", { replace: true });
   };
 
-  // Mock notification data - replace with API call later
-  const mockNotifications = [
-    {
-      id: "1",
-      type: "info" as const,
-      title: "New appointment scheduled",
-      message: "Dr. Smith has a new appointment at 2:00 PM today",
-      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
-      read: false,
+  // Real notifications from API
+  const { data: notificationsData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const response = await api.get('/notifications');
+      return response.data;
     },
-    {
-      id: "2",
-      type: "warning" as const,
-      title: "System maintenance",
-      message: "Scheduled maintenance will occur tonight at 11:00 PM",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-      read: false,
+    refetchInterval: 30000, // Poll every 30 seconds
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/notifications/${id}/read`);
     },
-    {
-      id: "3",
-      type: "success" as const,
-      title: "Report generated",
-      message: "Monthly financial report has been generated successfully",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
-      read: true,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/notifications/read-all');
     },
-  ];
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const notifications = (notificationsData?.data || notificationsData || []).map((n: {
+    id: string | number;
+    type?: string;
+    data?: { title?: string; message?: string; type?: string };
+    read_at: string | null;
+    created_at: string;
+  }) => ({
+    id: String(n.id),
+    type: (n.data?.type || n.type || 'info') as 'info' | 'warning' | 'success',
+    title: n.data?.title || 'Notification',
+    message: n.data?.message || '',
+    timestamp: n.created_at,
+    read: !!n.read_at,
+  }));
 
   const handleNotificationClick = (id: string) => {
-    console.log("Notification clicked:", id);
-    // TODO: Mark notification as read and navigate to relevant page
+    markReadMutation.mutate(id);
   };
 
   const handleMarkAllRead = () => {
-    console.log("Mark all notifications as read");
-    // TODO: API call to mark all notifications as read
+    markAllReadMutation.mutate();
   };
 
   return (
@@ -181,7 +222,8 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
         <div className="px-4 py-3">
           <div className="px-3 py-2 rounded-lg bg-sidebar-accent">
             <p className="text-xs text-sidebar-foreground/60">Logged in as</p>
-            <p className="text-sm font-medium text-sidebar-foreground">{config.title}</p>
+            <p className="text-sm font-medium text-sidebar-foreground">{userName}</p>
+            <p className="text-xs text-sidebar-foreground/60">{config.title}</p>
           </div>
         </div>
 
@@ -240,14 +282,14 @@ export function DashboardLayout({ role, userName = "User" }: DashboardLayoutProp
 
           <div className="flex items-center gap-3">
             <NotificationDropdown
-              notifications={mockNotifications}
+              notifications={notifications}
               onNotificationClick={handleNotificationClick}
               onMarkAllRead={handleMarkAllRead}
             />
             <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
                 <span className="text-sm font-medium text-secondary-foreground">
-                  {userName.charAt(0).toUpperCase()}
+                  {userName?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="hidden md:block">

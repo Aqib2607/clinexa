@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Eye, EyeOff, Lock, Mail, User, Phone, Calendar, ArrowRight, Briefcase, FileText } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { useAuthStore } from "@/hooks/useAuth";
 
 const userRoles = [
     { value: "patient", label: "Patient" },
@@ -17,6 +18,7 @@ const userRoles = [
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    const { login: authLogin } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -106,11 +108,9 @@ export default function RegisterPage() {
 
             // Navigate based on role
             if (formData.role === "patient") {
-                // Store token for patient auto-login
+                // Sync with centralized auth store
                 if (response.data.access_token) {
-                    localStorage.setItem('patient_token', response.data.access_token);
-                    // Also set auth_token for global api interceptor if needed
-                    localStorage.setItem('auth_token', response.data.access_token);
+                    authLogin(response.data.user, response.data.access_token);
                 }
                 navigate('/patient');
             } else {

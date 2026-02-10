@@ -98,8 +98,8 @@ export default function StaffManagement() {
     const openEditModal = (member: Staff) => {
         setCurrentStaff(member);
         setFormData({
-            name: member.user.name,
-            email: member.user.email,
+            name: member.user?.name || '',
+            email: member.user?.email || '',
             employee_code: member.employee_code,
             designation: member.designation,
             join_date: member.join_date.split('T')[0], // existing format might vary
@@ -149,9 +149,9 @@ export default function StaffManagement() {
     };
 
     const filteredStaff = staff.filter(member =>
-        member.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.employee_code.toLowerCase().includes(searchTerm.toLowerCase())
+        (member.user?.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (member.designation ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (member.employee_code ?? '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const columns = [
@@ -169,8 +169,8 @@ export default function StaffManagement() {
                         <User className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                        <p className="font-medium">{row.user.name}</p>
-                        <p className="text-xs text-muted-foreground">{row.user.email}</p>
+                        <p className="font-medium">{row.user?.name || 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">{row.user?.email || 'N/A'}</p>
                     </div>
                 </div>
             )

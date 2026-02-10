@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { Lock, Phone, ArrowRight, ArrowLeft } from "lucide-react";
+import { useAuthStore } from "@/hooks/useAuth";
 
 export default function PatientLogin() {
     const navigate = useNavigate();
+    const { login: authLogin } = useAuthStore();
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const [phone, setPhone] = useState("");
     const [otp, setOtp] = useState("");
@@ -36,7 +38,8 @@ export default function PatientLogin() {
         try {
             const res = await api.post('/patient/otp/verify', { mobile_number: phone, otp });
             toast.success("Login Successful");
-            localStorage.setItem('patient_token', res.data.token);
+            // Sync with centralized auth store
+            authLogin(res.data.user, res.data.token);
             navigate('/patient');
         } catch (err: unknown) {
             toast.error("Invalid OTP");

@@ -22,14 +22,17 @@ class DoctorAppointmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        // For updates (PUT/PATCH), make fields optional
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+
         return [
-            'patient_id' => 'required|exists:users,id',
-            'appointment_date' => 'required|date|after_or_equal:today',
-            'appointment_time' => 'required|date_format:H:i',
+            'patient_id' => $isUpdate ? 'sometimes|exists:users,id' : 'required|exists:users,id',
+            'appointment_date' => $isUpdate ? 'sometimes|date|after_or_equal:today' : 'required|date|after_or_equal:today',
+            'appointment_time' => $isUpdate ? 'sometimes|date_format:H:i' : 'required|date_format:H:i',
             'duration' => 'nullable|integer|min:15|max:120',
-            'reason' => 'required|string|max:500',
+            'reason' => $isUpdate ? 'sometimes|string|max:500' : 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
-            'status' => 'nullable|in:scheduled,completed,cancelled,rescheduled',
+            'status' => 'nullable|in:pending,confirmed,completed,cancelled,no_show',
         ];
     }
 

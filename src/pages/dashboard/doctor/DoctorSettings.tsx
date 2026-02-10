@@ -14,7 +14,38 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Bell, Lock, Save } from "lucide-react";
 
+import { useDoctorProfile, UpdateProfileData } from "@/hooks/useDoctorProfile";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+
 export default function DoctorSettings() {
+    const { data, isLoading } = useDoctorProfile();
+    const { register, handleSubmit, reset } = useForm<UpdateProfileData>();
+    const { updateMutation } = useDoctorProfile();
+
+    useEffect(() => {
+        if (data) {
+            const names = (data.user?.name || '').split(' ');
+            reset({
+                first_name: names[0] || '',
+                last_name: names.slice(1).join(' '),
+                phone: data.user?.phone || '',
+                specialization: data.doctor.specialization,
+                license_number: data.doctor.license_number,
+                bio: data.doctor.bio || '',
+            });
+        }
+    }, [data, reset]);
+
+    const handleSave = async (formData: UpdateProfileData) => {
+        updateMutation.mutate(formData);
+    };
+
+    if (isLoading) {
+        return <div className="p-8 text-center">Loading profile...</div>;
+    }
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader
@@ -48,44 +79,46 @@ export default function DoctorSettings() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="firstName">First Name</Label>
-                                    <Input id="firstName" defaultValue="Sarah" />
+                            <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="first_name">First Name</Label>
+                                        <Input id="first_name" {...register('first_name')} autoComplete="given-name" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="last_name">Last Name</Label>
+                                        <Input id="last_name" {...register('last_name')} autoComplete="family-name" />
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="lastName">Last Name</Label>
-                                    <Input id="lastName" defaultValue="Mitchell" />
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input id="email" value={data?.user.email} disabled className="bg-muted" />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" defaultValue="dr.mitchell@hospital.com" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Phone Number</Label>
-                                <Input id="phone" type="tel" defaultValue="+1 234-567-8900" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="specialization">Specialization</Label>
-                                <Input id="specialization" defaultValue="Cardiology" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="license">Medical License Number</Label>
-                                <Input id="license" defaultValue="MD-123456" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="bio">Bio</Label>
-                                <Textarea
-                                    id="bio"
-                                    rows={4}
-                                    defaultValue="Board-certified cardiologist with over 15 years of experience in treating cardiovascular diseases."
-                                />
-                            </div>
-                            <Button>
-                                <Save className="h-4 w-4 mr-2" />
-                                Save Changes
-                            </Button>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Phone Number</Label>
+                                    <Input id="phone" {...register('phone')} type="tel" autoComplete="tel" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="specialization">Specialization</Label>
+                                    <Input id="specialization" {...register('specialization')} autoComplete="off" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="license_number">Medical License Number</Label>
+                                    <Input id="license_number" {...register('license_number')} autoComplete="off" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="bio">Bio</Label>
+                                    <Textarea
+                                        id="bio"
+                                        rows={4}
+                                        {...register('bio')}
+                                    />
+                                </div>
+                                <Button type="submit" disabled={updateMutation.isPending}>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -102,48 +135,48 @@ export default function DoctorSettings() {
                         <CardContent className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Email Notifications</Label>
+                                    <Label htmlFor="emailNotifications" className="text-base">Email Notifications</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Receive notifications via email
                                     </p>
                                 </div>
-                                <Switch defaultChecked />
+                                <Switch id="emailNotifications" defaultChecked />
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">SMS Notifications</Label>
+                                    <Label htmlFor="smsNotifications" className="text-base">SMS Notifications</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Receive notifications via SMS
                                     </p>
                                 </div>
-                                <Switch defaultChecked />
+                                <Switch id="smsNotifications" defaultChecked />
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Appointment Reminders</Label>
+                                    <Label htmlFor="appointmentReminders" className="text-base">Appointment Reminders</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Get reminders for upcoming appointments
                                     </p>
                                 </div>
-                                <Switch defaultChecked />
+                                <Switch id="appointmentReminders" defaultChecked />
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Patient Updates</Label>
+                                    <Label htmlFor="patientUpdates" className="text-base">Patient Updates</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Notifications about patient status changes
                                     </p>
                                 </div>
-                                <Switch defaultChecked />
+                                <Switch id="patientUpdates" defaultChecked />
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Lab Results</Label>
+                                    <Label htmlFor="labResults" className="text-base">Lab Results</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Alerts when lab results are available
                                     </p>
                                 </div>
-                                <Switch defaultChecked />
+                                <Switch id="labResults" defaultChecked />
                             </div>
                             <Button>
                                 <Save className="h-4 w-4 mr-2" />
@@ -165,15 +198,15 @@ export default function DoctorSettings() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="currentPassword">Current Password</Label>
-                                <Input id="currentPassword" type="password" />
+                                <Input id="currentPassword" name="currentPassword" type="password" autoComplete="current-password" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="newPassword">New Password</Label>
-                                <Input id="newPassword" type="password" />
+                                <Input id="newPassword" name="newPassword" type="password" autoComplete="new-password" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                                <Input id="confirmPassword" type="password" />
+                                <Input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" />
                             </div>
                             <Button>
                                 <Lock className="h-4 w-4 mr-2" />
@@ -192,12 +225,12 @@ export default function DoctorSettings() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <Label className="text-base">Enable 2FA</Label>
+                                    <Label htmlFor="enable2fa" className="text-base">Enable 2FA</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Require a verification code in addition to your password
                                     </p>
                                 </div>
-                                <Switch />
+                                <Switch id="enable2fa" />
                             </div>
                         </CardContent>
                     </Card>

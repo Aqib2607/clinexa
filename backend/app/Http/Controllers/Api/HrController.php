@@ -16,7 +16,7 @@ class HrController extends Controller
     // --- Employee ---
     public function getEmployees()
     {
-        return response()->json(Employee::with(['user', 'shift'])->where('is_active', true)->paginate(20));
+        return response()->json(Employee::with(['user', 'shift'])->paginate(20));
     }
 
     public function createShift(Request $request)

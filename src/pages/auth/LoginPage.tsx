@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
+import { useAuthStore } from "@/hooks/useAuth";
+import api from "@/lib/api";
 
 const userRoles = [
   { value: "super_admin", label: "Admin", redirect: "/admin" },
@@ -15,6 +17,7 @@ const userRoles = [
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,14 +30,33 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
 
-    const selectedRole = userRoles.find((r) => r.value === formData.role);
-    if (selectedRole) {
-      navigate(selectedRole.redirect);
+      const data = response.data;
+
+      // Sync with zustand auth store (also sets localStorage)
+      authLogin(data.user, data.access_token);
+
+      // Navigate to the appropriate dashboard based on user's actual role
+      const roleRedirects: Record<string, string> = {
+        super_admin: '/admin',
+        doctor: '/doctor',
+        nurse: '/nurse',
+        patient: '/patient',
+      };
+      navigate(roleRedirects[data.user.role] || '/login');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message || 'Login failed. Please check your credentials and try again.';
+      alert(message);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,80 +20,48 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, Clock, AlertCircle, ClipboardList, Filter } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, ClipboardList, Filter, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Task {
     id: string;
     title: string;
-    patientName: string;
+    patient_name: string;
     ward: string;
     priority: "high" | "medium" | "low";
-    dueTime: string;
+    due_time: string;
     completed: boolean;
+    type: string;
+    admission_id: string;
     notes?: string;
 }
 
 export default function NurseTasks() {
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
     const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
-    // Mock data - replace with API call
-    const [tasks, setTasks] = useState<Task[]>([
-        {
-            id: "1",
-            title: "Administer medication",
-            patientName: "John Doe",
-            ward: "ICU-101",
-            priority: "high",
-            dueTime: "14:00",
-            completed: false,
-            notes: "Blood pressure medication",
+    const { data: tasks = [], isLoading } = useQuery<Task[]>({
+        queryKey: ["nurse-tasks"],
+        queryFn: async () => {
+            const res = await api.get("/nurse/tasks");
+            return res.data;
         },
-        {
-            id: "2",
-            title: "Check vital signs",
-            patientName: "Jane Smith",
-            ward: "GW-205",
-            priority: "medium",
-            dueTime: "15:00",
-            completed: false,
-        },
-        {
-            id: "3",
-            title: "Wound dressing change",
-            patientName: "Robert Johnson",
-            ward: "ICU-103",
-            priority: "high",
-            dueTime: "14:30",
-            completed: false,
-            notes: "Post-surgery wound care",
-        },
-        {
-            id: "4",
-            title: "Patient mobility assistance",
-            patientName: "Emily Davis",
-            ward: "MAT-301",
-            priority: "low",
-            dueTime: "16:00",
-            completed: true,
-        },
-        {
-            id: "5",
-            title: "IV fluid check",
-            patientName: "John Doe",
-            ward: "ICU-101",
-            priority: "medium",
-            dueTime: "13:00",
-            completed: true,
-        },
-    ]);
+    });
 
-    const toggleTaskComplete = (taskId: string) => {
-        setTasks(
-            tasks.map((task) =>
-                task.id === taskId ? { ...task, completed: !task.completed } : task
-            )
-        );
-    };
+    const completeTaskMutation = useMutation({
+        mutationFn: async (taskId: string) => {
+            return api.patch(`/nurse/tasks/${taskId}/complete`);
+        },
+        onSuccess: () => {
+            toast({ title: "Task completed", description: "Task marked as completed." });
+            queryClient.invalidateQueries({ queryKey: ["nurse-tasks"] });
+            queryClient.invalidateQueries({ queryKey: ["nurse-vitals"] });
+        },
+        onError: () => {
+            toast({ title: "Error", description: "Failed to complete task.", variant: "destructive" });
+        },
+    });
 
     const filteredTasks = tasks.filter((task) => {
         if (priorityFilter === "all") return true;
@@ -117,17 +88,20 @@ export default function NurseTasks() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader
                 title="My Tasks"
                 description="Manage your nursing tasks and assignments"
-            >
-                <Button>
-                    <ClipboardList className="h-4 w-4 mr-2" />
-                    Add Task
-                </Button>
-            </PageHeader>
+            />
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -172,29 +146,44 @@ export default function NurseTasks() {
             <div className="space-y-3">
                 {filteredTasks.length === 0 ? (
                     <Card>
-                        <CardContent className="py-12 text-center text-muted-foreground">
-                            No tasks found
+                        <CardContent className="py-12 text-center">
+                            <ClipboardList className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+                            <p className="font-medium text-muted-foreground">No tasks found</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {priorityFilter !== "all"
+                                    ? "Try changing the filter"
+                                    : "All vitals are up to date"}
+                            </p>
                         </CardContent>
                     </Card>
                 ) : (
                     filteredTasks.map((task) => (
                         <Card
                             key={task.id}
-                            className={`transition-all ${task.completed ? "opacity-60" : "hover:shadow-md"
-                                }`}
+                            className={`transition-all ${
+                                task.completed ? "opacity-60" : "hover:shadow-md"
+                            }`}
                         >
                             <CardHeader className="pb-3">
                                 <div className="flex items-start gap-4">
                                     <Checkbox
                                         checked={task.completed}
-                                        onCheckedChange={() => toggleTaskComplete(task.id)}
+                                        onCheckedChange={() => {
+                                            if (!task.completed) {
+                                                completeTaskMutation.mutate(task.id);
+                                            }
+                                        }}
                                         className="mt-1"
+                                        disabled={task.completed || completeTaskMutation.isPending}
                                     />
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-start justify-between gap-2">
                                             <CardTitle
-                                                className={`text-base ${task.completed ? "line-through text-muted-foreground" : ""
-                                                    }`}
+                                                className={`text-base ${
+                                                    task.completed
+                                                        ? "line-through text-muted-foreground"
+                                                        : ""
+                                                }`}
                                             >
                                                 {task.title}
                                             </CardTitle>
@@ -207,7 +196,7 @@ export default function NurseTasks() {
                                             </span>
                                         </div>
                                         <CardDescription>
-                                            {task.patientName} • {task.ward}
+                                            {task.patient_name} • {task.ward}
                                         </CardDescription>
                                     </div>
                                 </div>
@@ -215,14 +204,14 @@ export default function NurseTasks() {
                             <CardContent className="space-y-2">
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Clock className="h-4 w-4" />
-                                    <span>Due: {task.dueTime}</span>
+                                    <span>Due: {task.due_time}</span>
                                 </div>
                                 {task.notes && (
                                     <p className="text-sm text-muted-foreground">{task.notes}</p>
                                 )}
-                                {!task.completed && (
-                                    <Button variant="outline" size="sm" className="mt-2">
-                                        Add Notes
+                                {!task.completed && task.type === "vitals" && (
+                                    <Button variant="outline" size="sm" className="mt-2" asChild>
+                                        <Link to="/nurse/vitals">Record Vitals</Link>
                                     </Button>
                                 )}
                             </CardContent>

@@ -34,7 +34,10 @@ interface ActivityLog {
   time: string;
 }
 
+import { useUser } from "@/hooks/useUser";
+
 export default function AdminDashboard() {
+  const { data: user } = useUser();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +94,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 lg:space-y-8 animate-fade-in">
       <PageHeader
-        title="Admin Dashboard"
+        title={`Welcome, ${user?.name || 'Admin'}`}
         description="Hospital overview and management"
       >
         <Button variant="outline" className="btn-transition">
@@ -125,28 +128,28 @@ export default function AdminDashboard() {
               <span className="text-sm text-muted-foreground">Database</span>
               <span className="flex items-center gap-2 text-sm text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
-                Operational
+                {stats ? 'Connected' : 'Checking…'}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">API Services</span>
               <span className="flex items-center gap-2 text-sm text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
-                Operational
+                {stats ? 'Operational' : 'Checking…'}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Storage</span>
+              <span className="text-sm text-muted-foreground">Active Users</span>
               <span className="flex items-center gap-2 text-sm text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
-                78% Used
+                {stats?.active_users?.toLocaleString() ?? '—'} online
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Security</span>
-              <span className="flex items-center gap-2 text-sm text-warning">
-                <span className="h-2 w-2 rounded-full bg-warning" />
-                {stats?.security_alerts || 0} Alerts
+              <span className={`flex items-center gap-2 text-sm ${(stats?.security_alerts ?? 0) > 0 ? 'text-warning' : 'text-success'}`}>
+                <span className={`h-2 w-2 rounded-full ${(stats?.security_alerts ?? 0) > 0 ? 'bg-warning' : 'bg-success'}`} />
+                {(stats?.security_alerts ?? 0) > 0 ? `${stats?.security_alerts} Alerts` : 'All Clear'}
               </span>
             </div>
           </div>

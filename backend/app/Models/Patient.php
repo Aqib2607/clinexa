@@ -16,8 +16,7 @@ class Patient extends Model
         'name',
         'dob',
         'gender',
-        'phone', // maps to contact_number in script? Script uses contact_number. Schema has phone.
-        'contact_number', // Wait, schema has 'phone'. Verify script uses 'contact_number'.
+        'phone',
         'email',
         'address',
         'guardian_name',
@@ -28,6 +27,11 @@ class Patient extends Model
     protected $casts = [
         'dob' => 'date',
     ];
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function appointments(): HasMany
     {

@@ -1,3 +1,7 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +15,107 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Bell, Lock, Save } from "lucide-react";
+import { User, Bell, Lock, Save, Loader2 } from "lucide-react";
+
+interface NurseProfile {
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        phone: string | null;
+    };
+    employee: {
+        id: number;
+        employee_code: string;
+        designation: string;
+        department: string;
+        shift: {
+            name: string;
+            start_time: string;
+            end_time: string;
+        } | null;
+        join_date: string;
+    } | null;
+}
 
 export default function NurseSettings() {
+    const { toast } = useToast();
+
+    const { data: profile, isLoading } = useQuery<NurseProfile>({
+        queryKey: ["nurse-profile"],
+        queryFn: async () => {
+            const res = await api.get("/nurse/profile");
+            return res.data;
+        },
+    });
+
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [phone, setPhone] = useState("");
+
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    // Populate form when profile data loads
+    useEffect(() => {
+        if (profile) {
+            const parts = (profile.user?.name || "").split(" ");
+            setFirstName(parts[0] || "");
+            setLastName(parts.slice(1).join(" ") || "");
+            setPhone(profile.user?.phone || "");
+        }
+    }, [profile]);
+
+    const updateProfileMutation = useMutation({
+        mutationFn: async () => {
+            return api.post("/nurse/profile", {
+                name: `${firstName} ${lastName}`.trim(),
+                phone,
+            });
+        },
+        onSuccess: () => {
+            toast({ title: "Success", description: "Profile updated successfully." });
+        },
+        onError: () => {
+            toast({
+                title: "Error",
+                description: "Failed to update profile.",
+                variant: "destructive",
+            });
+        },
+    });
+
+    const changePasswordMutation = useMutation({
+        mutationFn: async () => {
+            return api.post("/nurse/profile", {
+                current_password: currentPassword,
+                new_password: newPassword,
+                new_password_confirmation: confirmPassword,
+            });
+        },
+        onSuccess: () => {
+            toast({ title: "Success", description: "Password updated successfully." });
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+        },
+        onError: (err: unknown) => {
+            const message =
+                (err as { response?: { data?: { message?: string } } })?.response?.data
+                    ?.message || "Failed to update password.";
+            toast({ title: "Error", description: message, variant: "destructive" });
+        },
+    });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PageHeader
@@ -42,43 +144,82 @@ export default function NurseSettings() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Personal Information</CardTitle>
-                            <CardDescription>
-                                Update your personal details
-                            </CardDescription>
+                            <CardDescription>Update your personal details</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="firstName">First Name</Label>
-                                    <Input id="firstName" defaultValue="Mary" />
+                                    <Input
+                                        id="firstName"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="lastName">Last Name</Label>
-                                    <Input id="lastName" defaultValue="Johnson" />
+                                    <Input
+                                        id="lastName"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" defaultValue="mary.johnson@hospital.com" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={profile?.user.email ?? ""}
+                                    disabled
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="phone">Phone Number</Label>
-                                <Input id="phone" type="tel" defaultValue="+1 234-567-8900" />
+                                <Input
+                                    id="phone"
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="employeeId">Employee ID</Label>
-                                <Input id="employeeId" defaultValue="NRS-12345" disabled />
+                                <Input
+                                    id="employeeId"
+                                    value={profile?.employee?.employee_code ?? "N/A"}
+                                    disabled
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="department">Department</Label>
-                                <Input id="department" defaultValue="General Ward" />
+                                <Input
+                                    id="department"
+                                    value={profile?.employee?.department ?? "N/A"}
+                                    disabled
+                                />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="shift">Preferred Shift</Label>
-                                <Input id="shift" defaultValue="Day Shift (7AM - 3PM)" />
+                                <Label htmlFor="shift">Current Shift</Label>
+                                <Input
+                                    id="shift"
+                                    value={
+                                        profile?.employee?.shift
+                                            ? `${profile.employee.shift.name} (${profile.employee.shift.start_time} - ${profile.employee.shift.end_time})`
+                                            : "N/A"
+                                    }
+                                    disabled
+                                />
                             </div>
-                            <Button>
-                                <Save className="h-4 w-4 mr-2" />
+                            <Button
+                                onClick={() => updateProfileMutation.mutate()}
+                                disabled={updateProfileMutation.isPending}
+                            >
+                                {updateProfileMutation.isPending ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Save className="h-4 w-4 mr-2" />
+                                )}
                                 Save Changes
                             </Button>
                         </CardContent>
@@ -140,10 +281,6 @@ export default function NurseSettings() {
                                 </div>
                                 <Switch defaultChecked />
                             </div>
-                            <Button>
-                                <Save className="h-4 w-4 mr-2" />
-                                Save Preferences
-                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -160,20 +297,50 @@ export default function NurseSettings() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="currentPassword">Current Password</Label>
-                                <Input id="currentPassword" type="password" />
+                                <Input
+                                    id="currentPassword"
+                                    type="password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="newPassword">New Password</Label>
-                                <Input id="newPassword" type="password" />
+                                <Input
+                                    id="newPassword"
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                                <Input id="confirmPassword" type="password" />
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
                             </div>
-                            <Button>
-                                <Lock className="h-4 w-4 mr-2" />
+                            <Button
+                                onClick={() => changePasswordMutation.mutate()}
+                                disabled={
+                                    changePasswordMutation.isPending ||
+                                    !currentPassword ||
+                                    !newPassword ||
+                                    newPassword !== confirmPassword
+                                }
+                            >
+                                {changePasswordMutation.isPending ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Lock className="h-4 w-4 mr-2" />
+                                )}
                                 Update Password
                             </Button>
+                            {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                                <p className="text-sm text-destructive">Passwords do not match</p>
+                            )}
                         </CardContent>
                     </Card>
 

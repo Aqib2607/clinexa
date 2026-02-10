@@ -14,13 +14,17 @@ class Prescription extends Model
         'patient_id',
         'doctor_id',
         'vitals',
+        'medications',
         'notes',
         'diagnosis',
         'advice',
+        'follow_up_date',
     ];
 
     protected $casts = [
         'vitals' => 'array',
+        'medications' => 'array',
+        'follow_up_date' => 'date',
     ];
 
     public function appointment(): BelongsTo

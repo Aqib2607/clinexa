@@ -9,93 +9,95 @@ import {
   Activity,
   ClipboardCheck,
   Clock,
-  AlertTriangle,
   ThermometerSun,
   Heart,
-  Droplets,
   ChevronRight,
   Plus,
+  Loader2,
 } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
-const stats = [
-  { title: "Assigned Patients", value: 8, icon: Users, description: "Ward A & B" },
-  { title: "Pending Vitals", value: 4, icon: Activity },
-  { title: "Tasks Completed", value: "12/15", icon: ClipboardCheck },
-  { title: "Shift Ends", value: "3:00 PM", icon: Clock },
-];
-
-const assignedPatients = [
-  {
-    name: "John Smith",
-    room: "A-101",
-    condition: "Post-Surgery",
-    doctor: "Dr. Mitchell",
-    vitalsStatus: "due",
-    lastVitals: "2 hours ago",
-    alerts: ["Medication at 10:00 AM"]
-  },
-  {
-    name: "Emily Johnson",
-    room: "A-102",
-    condition: "Observation",
-    doctor: "Dr. Wilson",
-    vitalsStatus: "completed",
-    lastVitals: "30 min ago",
-    alerts: []
-  },
-  {
-    name: "Michael Davis",
-    room: "A-103",
-    condition: "Critical Care",
-    doctor: "Dr. Brown",
-    vitalsStatus: "due",
-    lastVitals: "3 hours ago",
-    alerts: ["IV fluid change", "Blood test scheduled"]
-  },
-  {
-    name: "Sarah Williams",
-    room: "B-201",
-    condition: "Recovery",
-    doctor: "Dr. Chen",
-    vitalsStatus: "completed",
-    lastVitals: "1 hour ago",
-    alerts: ["Discharge preparation"]
-  },
-];
-
-const pendingTasks = [
-  { task: "Administer medication - Room A-101", priority: "high", time: "10:00 AM" },
-  { task: "Change IV fluid - Room A-103", priority: "high", time: "10:30 AM" },
-  { task: "Vital signs - Ward A patients", priority: "medium", time: "11:00 AM" },
-  { task: "Prepare discharge papers - Room B-201", priority: "low", time: "12:00 PM" },
-  { task: "Blood sample collection - Room A-103", priority: "medium", time: "02:00 PM" },
-];
-
-const recentVitals = [
-  { patient: "Emily Johnson", bp: "120/80", temp: "98.4°F", pulse: "72", time: "30 min ago" },
-  { patient: "Sarah Williams", bp: "118/76", temp: "98.6°F", pulse: "68", time: "1 hour ago" },
-  { patient: "John Smith", bp: "135/85", temp: "99.1°F", pulse: "78", time: "2 hours ago" },
-];
+interface NurseDashboardData {
+  stats: {
+    assigned_patients: number;
+    pending_vitals: number;
+    tasks_completed: number;
+    tasks_total: number;
+    shift_ends: string;
+  };
+  patients: Array<{
+    id: string;
+    patient_name: string;
+    patient_id: number;
+    bed_number: string;
+    ward: string;
+    doctor: string;
+    vitals_status: 'due' | 'completed';
+    last_vitals: string;
+    admission_date: string;
+  }>;
+  recent_vitals: Array<{
+    id: string;
+    patient_name: string;
+    bp: string;
+    temperature: string;
+    pulse: string;
+    spo2: string;
+    time_ago: string;
+  }>;
+}
 
 export default function NurseDashboard() {
+  const { data: user } = useUser();
+
+  const { data, isLoading } = useQuery<NurseDashboardData>({
+    queryKey: ['nurse-dashboard'],
+    queryFn: async () => {
+      const response = await api.get('/nurse/dashboard');
+      return response.data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const stats = data?.stats;
+  const patients = data?.patients || [];
+  const recentVitals = data?.recent_vitals || [];
+
+  const statCards = [
+    { title: "Assigned Patients", value: stats?.assigned_patients ?? 0, icon: Users, description: "Currently admitted" },
+    { title: "Pending Vitals", value: stats?.pending_vitals ?? 0, icon: Activity },
+    { title: "Tasks Completed", value: stats?.tasks_total ? `${stats.tasks_completed}/${stats.tasks_total}` : "0/0", icon: ClipboardCheck },
+    { title: "Shift Ends", value: stats?.shift_ends ?? "N/A", icon: Clock },
+  ];
+
   return (
     <div className="space-y-6 lg:space-y-8 animate-fade-in">
       <PageHeader
-        title="Nurse Station"
+        title={`Welcome, ${user?.name || 'Nurse'}`}
         description="Your assigned patients and tasks"
       >
-        <Button className="btn-transition">
-          <Plus className="h-4 w-4 mr-2" />
-          Record Vitals
+        <Button className="btn-transition" asChild>
+          <Link to="/nurse/vitals">
+            <Plus className="h-4 w-4 mr-2" />
+            Record Vitals
+          </Link>
         </Button>
       </PageHeader>
 
-      {/* System Updates */}
       <SystemUpdates />
 
       {/* Stats Grid */}
       <div className="dashboard-grid">
-        {stats.map((stat, index) => (
+        {statCards.map((stat, index) => (
           <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
             <StatCard {...stat} />
           </div>
@@ -116,46 +118,45 @@ export default function NurseDashboard() {
               </div>
             </div>
             <div className="divide-y divide-border">
-              {assignedPatients.map((patient, index) => (
+              {patients.length > 0 ? patients.slice(0, 5).map((patient) => (
                 <div
-                  key={index}
+                  key={patient.id}
                   className="p-4 lg:px-6 hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                        <span className="font-bold text-muted-foreground">{patient.room}</span>
+                        <span className="font-bold text-muted-foreground text-xs">{patient.bed_number}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-card-foreground">{patient.name}</p>
-                        <p className="text-sm text-muted-foreground">{patient.condition} · {patient.doctor}</p>
-                        {patient.alerts.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {patient.alerts.map((alert, i) => (
-                              <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning">
-                                {alert}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <p className="font-medium text-card-foreground">{patient.patient_name}</p>
+                        <p className="text-sm text-muted-foreground">{patient.ward} · {patient.doctor}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <StatusBadge status={patient.vitalsStatus === 'due' ? 'pending' : 'completed'} />
-                      <p className="text-xs text-muted-foreground mt-1">Last: {patient.lastVitals}</p>
+                      <StatusBadge status={patient.vitals_status === 'due' ? 'pending' : 'completed'} />
+                      <p className="text-xs text-muted-foreground mt-1">Last: {patient.last_vitals}</p>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3 pl-16">
-                    <Button size="sm" variant="outline" className="btn-transition">
-                      View Chart
+                    <Button size="sm" variant="outline" className="btn-transition" asChild>
+                      <Link to="/nurse/patients">View Chart</Link>
                     </Button>
-                    <Button size="sm" className="btn-transition">
-                      <Activity className="h-4 w-4 mr-1" />
-                      Record Vitals
+                    <Button size="sm" className="btn-transition" asChild>
+                      <Link to="/nurse/vitals">
+                        <Activity className="h-4 w-4 mr-1" />
+                        Record Vitals
+                      </Link>
                     </Button>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="p-8 text-center text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p className="font-medium">No patients assigned</p>
+                  <p className="text-sm mt-1">There are currently no admitted patients to display.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -166,24 +167,25 @@ export default function NurseDashboard() {
           <div className="bg-card rounded-xl p-5 lg:p-6 shadow-card animate-slide-up stagger-1">
             <h3 className="font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-primary" />
-              Pending Tasks
+              Quick Actions
             </h3>
-            <div className="space-y-3">
-              {pendingTasks.map((task, index) => (
-                <div key={index} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className={`h-2 w-2 rounded-full mt-2 ${task.priority === 'high' ? 'bg-destructive' :
-                      task.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground'
-                    }`} />
-                  <div className="flex-1">
-                    <p className="text-sm text-card-foreground">{task.task}</p>
-                    <p className="text-xs text-muted-foreground">{task.time}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <Button variant="outline" size="sm" asChild className="w-full justify-start">
+                <Link to="/nurse/vitals">
+                  <Activity className="h-4 w-4 mr-2" /> Record Vital Signs
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="w-full justify-start">
+                <Link to="/nurse/tasks">
+                  <ClipboardCheck className="h-4 w-4 mr-2" /> View Tasks
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="w-full justify-start">
+                <Link to="/nurse/patients">
+                  <Users className="h-4 w-4 mr-2" /> View All Patients
+                </Link>
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" asChild className="w-full mt-2">
-              <Link to="/nurse/tasks">View All Tasks</Link>
-            </Button>
           </div>
 
           {/* Recent Vitals */}
@@ -193,9 +195,9 @@ export default function NurseDashboard() {
               Recent Vitals
             </h3>
             <div className="space-y-4">
-              {recentVitals.map((vital, index) => (
-                <div key={index} className="pb-3 border-b border-border last:border-0 last:pb-0">
-                  <p className="text-sm font-medium text-card-foreground mb-2">{vital.patient}</p>
+              {recentVitals.length > 0 ? recentVitals.slice(0, 3).map((vital) => (
+                <div key={vital.id} className="pb-3 border-b border-border last:border-0 last:pb-0">
+                  <p className="text-sm font-medium text-card-foreground mb-2">{vital.patient_name}</p>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="flex items-center gap-1">
                       <Heart className="h-3 w-3 text-destructive" />
@@ -203,16 +205,18 @@ export default function NurseDashboard() {
                     </div>
                     <div className="flex items-center gap-1">
                       <ThermometerSun className="h-3 w-3 text-warning" />
-                      <span className="text-muted-foreground">{vital.temp}</span>
+                      <span className="text-muted-foreground">{vital.temperature}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Activity className="h-3 w-3 text-primary" />
-                      <span className="text-muted-foreground">{vital.pulse} bpm</span>
+                      <span className="text-muted-foreground">{vital.pulse}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{vital.time}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{vital.time_ago}</p>
                 </div>
-              ))}
+              )) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No vitals recorded yet</p>
+              )}
             </div>
             <Button variant="ghost" size="sm" asChild className="w-full mt-2">
               <Link to="/nurse/vitals">View History</Link>

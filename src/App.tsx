@@ -98,7 +98,7 @@ const App = () => (
           <Route path="/patient/login" element={<PatientLogin />} />
 
           {/* Admin Dashboard */}
-          <Route element={<DashboardLayout role="super_admin" userName="Admin" />}>
+          <Route element={<DashboardLayout role="super_admin" />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/doctors" element={<DoctorsManagement />} />
             <Route path="/admin/appointments" element={<AppointmentList />} />
@@ -119,7 +119,7 @@ const App = () => (
           </Route>
 
           {/* Doctor Dashboard */}
-          <Route element={<DashboardLayout role="doctor" userName="Dr. Sarah Mitchell" />}>
+          <Route element={<DashboardLayout role="doctor" />}>
             <Route path="/doctor" element={<DoctorDashboard />} />
             <Route path="/doctor/appointments" element={<DoctorAppointments />} />
             <Route path="/doctor/patients" element={<DoctorPatients />} />
@@ -130,7 +130,7 @@ const App = () => (
           </Route>
 
           {/* Nurse Dashboard */}
-          <Route element={<DashboardLayout role="nurse" userName="Nurse Johnson" />}>
+          <Route element={<DashboardLayout role="nurse" />}>
             <Route path="/nurse" element={<NurseDashboard />} />
             <Route path="/nurse/patients" element={<NursePatients />} />
             <Route path="/nurse/vitals" element={<NurseVitals />} />
@@ -141,7 +141,7 @@ const App = () => (
           </Route>
 
           {/* Patient Dashboard */}
-          <Route element={<DashboardLayout role="patient" userName="John Smith" />}>
+          <Route element={<DashboardLayout role="patient" />}>
             <Route path="/patient" element={<PatientDashboard />} />
             <Route path="/patient/appointments" element={<PatientAppointments />} />
             <Route path="/patient/records" element={<PatientRecords />} />

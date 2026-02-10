@@ -1,0 +1,54 @@
+{
+  "task_name": "Clinexa HMS – Fix Doctor Schedule Slot Generation Week Mismatch",
+  "task_type": "Backend Contract Fix + Frontend Sync Correction",
+  "execution_mode": "strict_expert",
+  "critical_note": "Slots are being generated outside the currently viewed week. Fix backend and frontend so slot generation is week-aware and aligns with the Doctor Schedule page.",
+
+  "confirmed_root_cause": {
+    "issue": "Doctor selects days but day cards remain Off",
+    "actual_reason": "Slots are generated for next 30 days instead of the currently viewed week",
+    "impact": "appointment_slots exist, but not for the displayed week"
+  },
+
+  "non_negotiable_rules": [
+    "Doctor Schedule page is week-based",
+    "Slot generation MUST target the active week",
+    "appointment_slots is the only source of truth",
+    "Frontend cannot assume slot dates"
+  ],
+
+  "backend_fixes_required": {
+    "slot_generation_api": [
+      "Remove 'next 30 days' logic for doctor schedule",
+      "Accept week_start and week_end from frontend",
+      "Generate slots ONLY within provided week range",
+      "Insert appointment_slots rows with correct dates"
+    ],
+    "validation": [
+      "Reject slot generation for past dates",
+      "Prevent duplicate slot creation for same date/time"
+    ]
+  },
+
+  "frontend_fixes_required": {
+    "availability_modal": [
+      "Pass currently viewed week_start and week_end to backend",
+      "Do not assume backend date range",
+      "After success, re-fetch slots for same week"
+    ],
+    "schedule_view": [
+      "Day card Active state = appointment_slots exists for that date",
+      "Do not rely on checkbox selection state"
+    ]
+  },
+
+  "validation_steps": [
+    "Navigate to a future week (e.g., Feb 9–15, 2026)",
+    "Generate slots for selected days",
+    "Confirm appointment_slots rows exist for those exact dates",
+    "Verify day cards become Active immediately",
+    "Reload page and confirm persistence"
+  ],
+
+  "final_instruction_to_agent": "Fix the mismatch between slot generation and the currently viewed week. Ensure backend slot generation is week-aware and frontend passes explicit date ranges. Do not use relative date logic like 'next 30 days' for the Doctor Schedule page."
+}
