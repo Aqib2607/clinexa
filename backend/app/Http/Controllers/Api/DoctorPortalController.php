@@ -44,6 +44,11 @@ class DoctorPortalController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by patient
+        if ($request->has('patient_id')) {
+            $query->where('patient_id', $request->patient_id);
+        }
+
         // Filter by date range
         if ($request->has('date_from')) {
             $query->whereDate('appointment_date', '>=', $request->date_from);

@@ -36,6 +36,7 @@ export function useAppointments(filters?: {
     status?: string;
     date_from?: string;
     date_to?: string;
+    patient_id?: string;
 }) {
     return useQuery({
         queryKey: ['doctor-appointments', filters],
@@ -44,6 +45,7 @@ export function useAppointments(filters?: {
             if (filters?.status) params.append('status', filters.status);
             if (filters?.date_from) params.append('date_from', filters.date_from);
             if (filters?.date_to) params.append('date_to', filters.date_to);
+            if (filters?.patient_id) params.append('patient_id', filters.patient_id);
 
             const response = await api.get(`/doctor/appointments?${params.toString()}`);
             return response.data;
