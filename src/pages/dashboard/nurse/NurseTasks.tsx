@@ -20,7 +20,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, Clock, AlertCircle, ClipboardList, Filter, Loader2 } from "lucide-react";
+import {
+    CheckCircle2,
+    Clock,
+    AlertCircle,
+    ClipboardList,
+    Filter,
+    Loader2,
+    Activity,
+    Pill,
+    FileText,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface Task {
@@ -35,6 +46,45 @@ interface Task {
     admission_id: string;
     notes?: string;
 }
+
+type TaskTypeMeta = {
+    label: string;
+    icon: LucideIcon;
+    chipClass: string;
+    actionText?: string;
+    actionTo?: (task: Task) => string;
+};
+
+const TASK_TYPE_META: Record<string, TaskTypeMeta> = {
+    vitals: {
+        label: "Vitals",
+        icon: Activity,
+        chipClass: "bg-blue-50 text-blue-700",
+        actionText: "Record Vitals",
+        actionTo: (task) => `/nurse/vitals?patientId=${task.admission_id}`,
+    },
+    medication: {
+        label: "Medication",
+        icon: Pill,
+        chipClass: "bg-purple-50 text-purple-700",
+        actionText: "View Patient Chart",
+        actionTo: (task) => `/nurse/patients/${task.admission_id}`,
+    },
+    notes: {
+        label: "Nursing Notes",
+        icon: FileText,
+        chipClass: "bg-amber-50 text-amber-700",
+        actionText: "View Patient Chart",
+        actionTo: (task) => `/nurse/patients/${task.admission_id}`,
+    },
+    default: {
+        label: "Task",
+        icon: ClipboardList,
+        chipClass: "bg-slate-50 text-slate-700",
+        actionText: "View Patient Chart",
+        actionTo: (task) => `/nurse/patients/${task.admission_id}`,
+    },
+};
 
 export default function NurseTasks() {
     const { toast } = useToast();
@@ -78,13 +128,26 @@ export default function NurseTasks() {
     const getPriorityColor = (priority: string) => {
         switch (priority) {
             case "high":
-                return "text-red-600 bg-red-50";
+                return "bg-red-100 text-red-700";
             case "medium":
-                return "text-yellow-600 bg-yellow-50";
+                return "bg-amber-100 text-amber-700";
             case "low":
-                return "text-blue-600 bg-blue-50";
+                return "bg-blue-100 text-blue-700";
             default:
-                return "text-gray-600 bg-gray-50";
+                return "bg-slate-100 text-slate-700";
+        }
+    };
+
+    const getPriorityAccent = (priority: string) => {
+        switch (priority) {
+            case "high":
+                return "border-l-4 border-l-red-500 bg-red-50/40";
+            case "medium":
+                return "border-l-4 border-l-amber-500 bg-amber-50/30";
+            case "low":
+                return "border-l-4 border-l-blue-500 bg-blue-50/20";
+            default:
+                return "border-l-4 border-l-slate-300";
         }
     };
 
@@ -157,10 +220,15 @@ export default function NurseTasks() {
                         </CardContent>
                     </Card>
                 ) : (
-                    filteredTasks.map((task) => (
+                    filteredTasks.map((task) => {
+                        const typeInfo = TASK_TYPE_META[task.type] ?? TASK_TYPE_META.default;
+                        const TypeIcon = typeInfo.icon;
+                        const cardAccent = getPriorityAccent(task.priority);
+
+                        return (
                         <Card
                             key={task.id}
-                            className={`transition-all ${
+                            className={`transition-all ${cardAccent} ${
                                 task.completed ? "opacity-60" : "hover:shadow-md"
                             }`}
                         >
@@ -187,13 +255,23 @@ export default function NurseTasks() {
                                             >
                                                 {task.title}
                                             </CardTitle>
-                                            <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${getPriorityColor(
-                                                    task.priority
-                                                )}`}
-                                            >
-                                                {task.priority}
-                                            </span>
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                <span
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                                                        typeInfo.chipClass
+                                                    }`}
+                                                >
+                                                    <TypeIcon className="h-3.5 w-3.5" />
+                                                    {typeInfo.label}
+                                                </span>
+                                                <span
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                                                        task.priority
+                                                    )}`}
+                                                >
+                                                    {task.priority}
+                                                </span>
+                                            </div>
                                         </div>
                                         <CardDescription>
                                             {task.patient_name} • {task.ward}
@@ -209,14 +287,15 @@ export default function NurseTasks() {
                                 {task.notes && (
                                     <p className="text-sm text-muted-foreground">{task.notes}</p>
                                 )}
-                                {!task.completed && task.type === "vitals" && (
+                                {!task.completed && typeInfo.actionTo && typeInfo.actionText && (
                                     <Button variant="outline" size="sm" className="mt-2" asChild>
-                                        <Link to="/nurse/vitals">Record Vitals</Link>
+                                        <Link to={typeInfo.actionTo(task)}>{typeInfo.actionText}</Link>
                                     </Button>
                                 )}
                             </CardContent>
                         </Card>
-                    ))
+                        );
+                    })
                 )}
             </div>
         </div>
