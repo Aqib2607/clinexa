@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +48,8 @@ interface AdmittedPatient {
 export default function NurseVitals() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
-    const [selectedPatient, setSelectedPatient] = useState("");
+    const [searchParams] = useSearchParams();
+    const [selectedPatient, setSelectedPatient] = useState(searchParams.get("patientId") || "");
     const [formData, setFormData] = useState({
         systolic: "",
         diastolic: "",

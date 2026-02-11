@@ -140,10 +140,10 @@ export default function NurseDashboard() {
                   </div>
                   <div className="flex gap-2 mt-3 pl-16">
                     <Button size="sm" variant="outline" className="btn-transition" asChild>
-                      <Link to="/nurse/patients">View Chart</Link>
+                      <Link to={`/nurse/patients/${patient.id}`}>View Chart</Link>
                     </Button>
                     <Button size="sm" className="btn-transition" asChild>
-                      <Link to="/nurse/vitals">
+                      <Link to={`/nurse/vitals?patientId=${patient.id}`}>
                         <Activity className="h-4 w-4 mr-1" />
                         Record Vitals
                       </Link>

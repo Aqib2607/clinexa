@@ -248,8 +248,13 @@ Route::middleware('auth:sanctum')->group(function () {
         // Dashboard stats
         Route::get('/dashboard', [\App\Http\Controllers\Api\NursePortalController::class, 'getDashboardData']);
 
+        // Admission
+        Route::get('/admission-options', [\App\Http\Controllers\Api\NursePortalController::class, 'getAdmissionOptions']);
+        Route::post('/admit', [\App\Http\Controllers\Api\NursePortalController::class, 'admitPatient']);
+        
         // Assigned patients (from admissions)
         Route::get('/patients', [\App\Http\Controllers\Api\NursePortalController::class, 'getPatients']);
+        Route::get('/patients/{id}', [\App\Http\Controllers\Api\NursePortalController::class, 'getPatientDetails']);
 
         // Vitals
         Route::get('/vitals', [\App\Http\Controllers\Api\NursePortalController::class, 'getRecentVitals']);

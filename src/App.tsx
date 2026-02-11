@@ -45,6 +45,7 @@ import DoctorSettings from "@/pages/dashboard/doctor/DoctorSettings";
 
 // Nurse Pages
 import NursePatients from "@/pages/dashboard/nurse/NursePatients";
+import NursePatientChart from "@/pages/dashboard/nurse/NursePatientChart";
 import NurseVitals from "@/pages/dashboard/nurse/NurseVitals";
 import NurseTasks from "@/pages/dashboard/nurse/NurseTasks";
 import NurseSettings from "@/pages/dashboard/nurse/NurseSettings";
@@ -133,6 +134,7 @@ const App = () => (
           <Route element={<DashboardLayout role="nurse" />}>
             <Route path="/nurse" element={<NurseDashboard />} />
             <Route path="/nurse/patients" element={<NursePatients />} />
+            <Route path="/nurse/patients/:id" element={<NursePatientChart />} />
             <Route path="/nurse/vitals" element={<NurseVitals />} />
             <Route path="/nurse/tasks" element={<NurseTasks />} />
             <Route path="/nurse/settings" element={<NurseSettings />} />
