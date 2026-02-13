@@ -14,7 +14,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::all();
+        $departments = Department::withCount('doctors')->where('is_active', true)->get();
         return response()->json($departments);
     }
 
@@ -40,6 +40,26 @@ class DepartmentController extends Controller
     {
         $department = Department::findOrFail($id);
         return response()->json($department);
+    }
+
+    /**
+     * Get doctors for a specific department.
+     */
+    public function doctors(string $id)
+    {
+        $department = Department::findOrFail($id);
+        $doctors = $department->doctors()->with('user')->where('is_active', true)->get()->map(function($doctor) {
+            return [
+                'id' => $doctor->id,
+                'name' => $doctor->user->name,
+                'specialization' => $doctor->specialization,
+                'qualification' => $doctor->qualification,
+                'experience_years' => $doctor->experience_years,
+                'consultation_fee' => $doctor->consultation_fee,
+                'photo_url' => $doctor->photo_url,
+            ];
+        });
+        return response()->json($doctors);
     }
 
     /**

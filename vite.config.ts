@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    outDir: "dist",
+    outDir: "backend/public",
+    emptyOutDir: false,
   },
 }));

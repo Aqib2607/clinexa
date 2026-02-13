@@ -17,6 +17,7 @@ Route::prefix('auth')->group(function () {
 // Public data (for public-facing pages - read-only)
 Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class, 'index']);
 Route::get('departments/{department}', [\App\Http\Controllers\Api\DepartmentController::class, 'show']);
+Route::get('departments/{department}/doctors', [\App\Http\Controllers\Api\DepartmentController::class, 'doctors']);
 Route::get('doctors', [\App\Http\Controllers\Api\DoctorController::class, 'index']);
 Route::get('doctors/{doctor}', [\App\Http\Controllers\Api\DoctorController::class, 'show']);
 Route::get('services', [\App\Http\Controllers\Api\ServiceController::class, 'index']);

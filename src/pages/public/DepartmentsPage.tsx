@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DepartmentCard } from "@/components/cards/DepartmentCard";
+import api from "@/lib/api";
 import {
   Heart,
   Brain,
@@ -17,30 +18,62 @@ import {
   Thermometer,
   Radiation,
   Search,
+  Stethoscope as DefaultIcon,
+  type LucideIcon
 } from "lucide-react";
 
-const departments = [
-  { name: "Cardiology", description: "Comprehensive heart care including diagnostics, interventional procedures, and cardiac rehabilitation programs.", icon: Heart, doctorCount: 12 },
-  { name: "Neurology", description: "Expert care for brain, spine, and nervous system disorders with advanced diagnostic capabilities.", icon: Brain, doctorCount: 8 },
-  { name: "Orthopedics", description: "Complete bone, joint, and muscle treatment including joint replacement and sports medicine.", icon: Bone, doctorCount: 10 },
-  { name: "Pediatrics", description: "Compassionate healthcare for infants, children, and adolescents with specialized care units.", icon: Baby, doctorCount: 15 },
-  { name: "Ophthalmology", description: "Complete eye care services including LASIK, cataract surgery, and retinal treatments.", icon: Eye, doctorCount: 6 },
-  { name: "Emergency Medicine", description: "24/7 emergency medical services with trauma care and critical care specialists.", icon: Activity, doctorCount: 20 },
-  { name: "General Medicine", description: "Primary care and preventive medicine for adults with comprehensive health screenings.", icon: Stethoscope, doctorCount: 18 },
-  { name: "Oncology", description: "Advanced cancer care including chemotherapy, radiation therapy, and surgical oncology.", icon: Radiation, doctorCount: 9 },
-  { name: "Dermatology", description: "Skin care treatments including cosmetic procedures and skin cancer screening.", icon: Thermometer, doctorCount: 5 },
-  { name: "Gastroenterology", description: "Digestive system care with advanced endoscopy and liver disease treatment.", icon: Pill, doctorCount: 7 },
-  { name: "Pathology", description: "Diagnostic laboratory services with state-of-the-art testing facilities.", icon: Microscope, doctorCount: 8 },
-  { name: "Anesthesiology", description: "Pain management and anesthesia services for all surgical procedures.", icon: Syringe, doctorCount: 12 },
-];
+interface Department {
+  id: number;
+  name: string;
+  description: string;
+  doctors_count: number;
+}
+
+const iconMapping: Record<string, LucideIcon> = {
+  "Cardiology": Heart,
+  "Neurology": Brain,
+  "Orthopedics": Bone,
+  "Pediatrics": Baby,
+  "Ophthalmology": Eye,
+  "Emergency Medicine": Activity,
+  "General Medicine": Stethoscope,
+  "Oncology": Radiation,
+  "Dermatology": Thermometer,
+  "Gastroenterology": Pill,
+  "Pathology": Microscope,
+  "Anesthesiology": Syringe,
+};
 
 export default function DepartmentsPage() {
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await api.get('/departments');
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Failed to fetch departments", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const filteredDepartments = departments.filter((dept) =>
     dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dept.description.toLowerCase().includes(searchTerm.toLowerCase())
+    dept.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getIcon = (name: string) => {
+    // Try exact match or partial match
+    const key = Object.keys(iconMapping).find(k => name.includes(k));
+    return key ? iconMapping[key] : DefaultIcon;
+  };
+
 
   return (
     <div className="min-h-screen">
@@ -60,7 +93,7 @@ export default function DepartmentsPage() {
       </section>
 
       {/* Search & Filter */}
-      <section className="py-8 bg-muted/50 border-b border-border sticky top-[64px] lg:top-[80px] z-20">
+      <section className="py-8 bg-muted/50 border-b border-border">
         <div className="container-wide">
           <div className="relative max-w-md animate-fade-in">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -78,15 +111,25 @@ export default function DepartmentsPage() {
       {/* Departments Grid */}
       <section className="py-12 lg:py-20 bg-background">
         <div className="container-wide">
-          {filteredDepartments.length > 0 ? (
+          {loading ? (
+             <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+             </div>
+          ) : filteredDepartments.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredDepartments.map((dept, index) => (
                 <div
-                  key={index}
+                  key={dept.id}
                   className="animate-slide-up"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <DepartmentCard {...dept} href={`/departments/${dept.name.toLowerCase().replace(/\s+/g, '-')}`} />
+                  <DepartmentCard 
+                    name={dept.name}
+                    description={dept.description || "Medical department providing specialized care."}
+                    icon={getIcon(dept.name)}
+                    doctorCount={dept.doctors_count}
+                    href={`/departments/${dept.name.toLowerCase().replace(/\s+/g, '-')}`} 
+                  />
                 </div>
               ))}
             </div>

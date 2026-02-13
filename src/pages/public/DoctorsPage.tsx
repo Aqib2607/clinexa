@@ -1,49 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DoctorCard } from "@/components/cards/DoctorCard";
 import { Search, Filter } from "lucide-react";
+import api from "@/lib/api";
 
-const doctors = [
-  { name: "Dr. Sarah Mitchell", specialty: "Cardiologist", rating: 4.9, experience: "15 years", availability: "Available", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80" },
-  { name: "Dr. James Wilson", specialty: "Neurologist", rating: 4.8, experience: "12 years", availability: "Available", image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80" },
-  { name: "Dr. Emily Chen", specialty: "Pediatrician", rating: 4.9, experience: "10 years", availability: "Available", image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80" },
-  { name: "Dr. Michael Brown", specialty: "Orthopedic Surgeon", rating: 4.7, experience: "18 years", availability: "Available", image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80" },
-  { name: "Dr. Lisa Anderson", specialty: "Dermatologist", rating: 4.6, experience: "8 years", availability: "Available", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" },
-  { name: "Dr. David Kim", specialty: "General Physician", rating: 4.8, experience: "14 years", availability: "Busy", image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400&q=80" },
-  { name: "Dr. Rachel Green", specialty: "Ophthalmologist", rating: 4.9, experience: "11 years", availability: "Available", image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80" },
-  { name: "Dr. Robert Taylor", specialty: "Oncologist", rating: 4.8, experience: "16 years", availability: "Available", image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&q=80" },
-  { name: "Dr. Jennifer White", specialty: "Gastroenterologist", rating: 4.7, experience: "9 years", availability: "Available", image: "https://images.unsplash.com/photo-1614608682850-e0d6ed316d47?w=400&q=80" },
-  { name: "Dr. William Davis", specialty: "Cardiologist", rating: 4.8, experience: "20 years", availability: "Available", image: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=400&q=80" },
-  { name: "Dr. Amanda Martinez", specialty: "Pediatrician", rating: 4.9, experience: "7 years", availability: "Available", image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=400&q=80" },
-  { name: "Dr. Christopher Lee", specialty: "Neurologist", rating: 4.6, experience: "13 years", availability: "Busy", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80" },
-];
-
-const specialties = [
-  "All Specialties",
-  "Cardiologist",
-  "Neurologist",
-  "Pediatrician",
-  "Orthopedic Surgeon",
-  "Dermatologist",
-  "General Physician",
-  "Ophthalmologist",
-  "Oncologist",
-  "Gastroenterologist",
-];
+interface Doctor {
+  id: number;
+  user_id: number;
+  department_id: number;
+  specialization: string;
+  experience_years: number;
+  is_active: boolean;
+  user: {
+    name: string;
+    email: string;
+  };
+  department: {
+    name: string;
+  };
+}
 
 export default function DoctorsPage() {
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties");
+  const [specialties, setSpecialties] = useState<string[]>(["All Specialties"]);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await api.get('/doctors');
+        // The API returns paginated data: { current_page: 1, data: [...], ... }
+        // We'll use response.data.data if paginated, or response.data if we change API to return all
+        // The current DoctorController::index returns query->paginate(15)
+        const doctorData = response.data.data || [];
+        setDoctors(doctorData);
+
+        // Extract unique specialties
+        const uniqueSpecialties = Array.from(new Set(doctorData.map((d: Doctor) => d.specialization))) as string[];
+        setSpecialties(["All Specialties", ...uniqueSpecialties]);
+        
+      } catch (error) {
+        console.error("Failed to fetch doctors", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctors();
+  }, []);
 
   const filteredDoctors = doctors.filter((doctor) => {
-    const matchesSearch = doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSpecialty = selectedSpecialty === "All Specialties" || doctor.specialty === selectedSpecialty;
+    const matchesSearch = doctor.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSpecialty = selectedSpecialty === "All Specialties" || doctor.specialization === selectedSpecialty;
     return matchesSearch && matchesSpecialty;
   });
+
 
   return (
     <div className="min-h-screen">
@@ -63,7 +79,7 @@ export default function DoctorsPage() {
       </section>
 
       {/* Search & Filter */}
-      <section className="py-6 lg:py-8 bg-muted/50 border-b border-border sticky top-[64px] lg:top-[80px] z-20">
+      <section className="py-6 lg:py-8 bg-muted/50 border-b border-border">
         <div className="container-wide">
           <div className="flex flex-col sm:flex-row gap-4 animate-fade-in">
             <div className="relative flex-1 max-w-md">
@@ -96,7 +112,11 @@ export default function DoctorsPage() {
       {/* Doctors Grid */}
       <section className="py-12 lg:py-20 bg-background">
         <div className="container-wide">
-          {filteredDoctors.length > 0 ? (
+          {loading ? (
+             <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+             </div>
+          ) : filteredDoctors.length > 0 ? (
             <>
               <p className="text-muted-foreground mb-6">
                 Showing {filteredDoctors.length} doctor{filteredDoctors.length !== 1 ? 's' : ''}
@@ -104,11 +124,18 @@ export default function DoctorsPage() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredDoctors.map((doctor, index) => (
                   <div
-                    key={index}
+                    key={doctor.id}
                     className="animate-slide-up"
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    <DoctorCard {...doctor} />
+                    <DoctorCard 
+                      name={doctor.user.name}
+                      specialty={doctor.specialization}
+                      experience={`${doctor.experience_years} years`}
+                      rating={5.0} // Placeholder
+                      availability={doctor.is_active ? "Available" : "Unavailable"}
+                      image={`https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.user.name)}&background=random`}
+                    />
                   </div>
                 ))}
               </div>

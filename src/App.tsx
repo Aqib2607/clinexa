@@ -12,6 +12,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import HomePage from "@/pages/public/HomePage";
 import AboutPage from "@/pages/public/AboutPage";
 import DepartmentsPage from "@/pages/public/DepartmentsPage";
+import DepartmentDetailPage from "@/pages/public/DepartmentDetailPage";
 import DoctorsPage from "@/pages/public/DoctorsPage";
 import AppointmentPage from "@/pages/public/AppointmentPage";
 import ContactPage from "@/pages/public/ContactPage";
@@ -85,6 +86,7 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/departments" element={<DepartmentsPage />} />
+            <Route path="/departments/:slug" element={<DepartmentDetailPage />} />
             <Route path="/doctors" element={<DoctorsPage />} />
             <Route path="/appointment" element={<AppointmentPage />} />
             <Route path="/contact" element={<ContactPage />} />
