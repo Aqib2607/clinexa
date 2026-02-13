@@ -158,6 +158,13 @@ export default function RegisterPage() {
             <div className="min-h-screen flex">
             {/* Left Panel - Branding */}
             <div className="hidden lg:flex lg:w-1/2 bg-clinexa-dark relative overflow-hidden">
+                <div className="absolute inset-0">
+                    <img 
+                        src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80" 
+                        alt="Medical team" 
+                        className="w-full h-full object-cover opacity-20"
+                    />
+                </div>
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
                 <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
                     <Link to="/" className="flex items-center gap-3 mb-12">

@@ -63,8 +63,12 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="relative animate-slide-up">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
-                <Building2 className="h-32 w-32 text-primary/30" />
+              <div className="aspect-square rounded-2xl overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&q=80" 
+                  alt="Modern hospital building" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="absolute -bottom-6 -left-6 bg-card rounded-xl p-6 shadow-card-hover">
                 <p className="text-4xl font-bold text-primary">25+</p>
@@ -112,8 +116,12 @@ export default function AboutPage() {
             <div className="bg-card rounded-2xl p-8 lg:p-12 shadow-card animate-fade-in">
               <div className="flex flex-col lg:flex-row gap-8 items-start">
                 <div className="lg:w-1/3">
-                  <div className="aspect-square rounded-xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center mb-4">
-                    <span className="text-6xl font-bold text-primary/30">CEO</span>
+                  <div className="aspect-square rounded-xl overflow-hidden mb-4">
+                    <img 
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80" 
+                      alt="Dr. Richard Thompson" 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <h3 className="text-xl font-bold text-card-foreground">Dr. Richard Thompson</h3>
                   <p className="text-primary font-medium">Chief Executive Officer</p>

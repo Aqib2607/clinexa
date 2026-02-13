@@ -7,18 +7,18 @@ import { DoctorCard } from "@/components/cards/DoctorCard";
 import { Search, Filter } from "lucide-react";
 
 const doctors = [
-  { name: "Dr. Sarah Mitchell", specialty: "Cardiologist", rating: 4.9, experience: "15 years", availability: "Available" },
-  { name: "Dr. James Wilson", specialty: "Neurologist", rating: 4.8, experience: "12 years", availability: "Available" },
-  { name: "Dr. Emily Chen", specialty: "Pediatrician", rating: 4.9, experience: "10 years", availability: "Available" },
-  { name: "Dr. Michael Brown", specialty: "Orthopedic Surgeon", rating: 4.7, experience: "18 years", availability: "Available" },
-  { name: "Dr. Lisa Anderson", specialty: "Dermatologist", rating: 4.6, experience: "8 years", availability: "Available" },
-  { name: "Dr. David Kim", specialty: "General Physician", rating: 4.8, experience: "14 years", availability: "Busy" },
-  { name: "Dr. Rachel Green", specialty: "Ophthalmologist", rating: 4.9, experience: "11 years", availability: "Available" },
-  { name: "Dr. Robert Taylor", specialty: "Oncologist", rating: 4.8, experience: "16 years", availability: "Available" },
-  { name: "Dr. Jennifer White", specialty: "Gastroenterologist", rating: 4.7, experience: "9 years", availability: "Available" },
-  { name: "Dr. William Davis", specialty: "Cardiologist", rating: 4.8, experience: "20 years", availability: "Available" },
-  { name: "Dr. Amanda Martinez", specialty: "Pediatrician", rating: 4.9, experience: "7 years", availability: "Available" },
-  { name: "Dr. Christopher Lee", specialty: "Neurologist", rating: 4.6, experience: "13 years", availability: "Busy" },
+  { name: "Dr. Sarah Mitchell", specialty: "Cardiologist", rating: 4.9, experience: "15 years", availability: "Available", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80" },
+  { name: "Dr. James Wilson", specialty: "Neurologist", rating: 4.8, experience: "12 years", availability: "Available", image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80" },
+  { name: "Dr. Emily Chen", specialty: "Pediatrician", rating: 4.9, experience: "10 years", availability: "Available", image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80" },
+  { name: "Dr. Michael Brown", specialty: "Orthopedic Surgeon", rating: 4.7, experience: "18 years", availability: "Available", image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80" },
+  { name: "Dr. Lisa Anderson", specialty: "Dermatologist", rating: 4.6, experience: "8 years", availability: "Available", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" },
+  { name: "Dr. David Kim", specialty: "General Physician", rating: 4.8, experience: "14 years", availability: "Busy", image: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400&q=80" },
+  { name: "Dr. Rachel Green", specialty: "Ophthalmologist", rating: 4.9, experience: "11 years", availability: "Available", image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80" },
+  { name: "Dr. Robert Taylor", specialty: "Oncologist", rating: 4.8, experience: "16 years", availability: "Available", image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&q=80" },
+  { name: "Dr. Jennifer White", specialty: "Gastroenterologist", rating: 4.7, experience: "9 years", availability: "Available", image: "https://images.unsplash.com/photo-1614608682850-e0d6ed316d47?w=400&q=80" },
+  { name: "Dr. William Davis", specialty: "Cardiologist", rating: 4.8, experience: "20 years", availability: "Available", image: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=400&q=80" },
+  { name: "Dr. Amanda Martinez", specialty: "Pediatrician", rating: 4.9, experience: "7 years", availability: "Available", image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=400&q=80" },
+  { name: "Dr. Christopher Lee", specialty: "Neurologist", rating: 4.6, experience: "13 years", availability: "Busy", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80" },
 ];
 
 const specialties = [

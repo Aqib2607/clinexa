@@ -30,10 +30,10 @@ const departments = [
 ];
 
 const doctors = [
-  { name: "Dr. Sarah Mitchell", specialty: "Cardiologist", rating: 4.9, experience: "15 years", availability: "Available" },
-  { name: "Dr. James Wilson", specialty: "Neurologist", rating: 4.8, experience: "12 years", availability: "Available" },
-  { name: "Dr. Emily Chen", specialty: "Pediatrician", rating: 4.9, experience: "10 years", availability: "Available" },
-  { name: "Dr. Michael Brown", specialty: "Orthopedic Surgeon", rating: 4.7, experience: "18 years", availability: "Available" },
+  { name: "Dr. Sarah Mitchell", specialty: "Cardiologist", rating: 4.9, experience: "15 years", availability: "Available", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80" },
+  { name: "Dr. James Wilson", specialty: "Neurologist", rating: 4.8, experience: "12 years", availability: "Available", image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80" },
+  { name: "Dr. Emily Chen", specialty: "Pediatrician", rating: 4.9, experience: "10 years", availability: "Available", image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&q=80" },
+  { name: "Dr. Michael Brown", specialty: "Orthopedic Surgeon", rating: 4.7, experience: "18 years", availability: "Available", image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&q=80" },
 ];
 
 const stats = [
@@ -86,13 +86,12 @@ export default function HomePage() {
             </div>
             <div className="hidden lg:block animate-slide-up">
               <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/20 backdrop-blur-sm border border-white/10 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                      <Heart className="h-12 w-12 text-primary" />
-                    </div>
-                    <p className="text-white text-lg font-medium">Caring for You</p>
-                  </div>
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-white/10">
+                  <img 
+                    src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80" 
+                    alt="Modern hospital facility" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 {/* Floating Stats */}
                 <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-card-hover animate-scale-in">

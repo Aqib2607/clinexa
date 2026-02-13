@@ -155,8 +155,15 @@ export default function AppointmentPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-clinexa-dark py-12 lg:py-16">
-        <div className="container-wide">
+      <section className="bg-clinexa-dark py-12 lg:py-16 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <img 
+            src="https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=1600&q=80" 
+            alt="Medical appointment" 
+            className="w-full h-full object-cover opacity-10"
+          />
+        </div>
+        <div className="container-wide relative z-10">
           <div className="max-w-2xl animate-fade-in">
             <span className="text-primary font-medium">Schedule a Visit</span>
             <h1 className="text-2xl lg:text-4xl font-bold text-white mt-2 mb-4">
