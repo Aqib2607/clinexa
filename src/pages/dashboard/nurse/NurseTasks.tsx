@@ -90,6 +90,7 @@ export default function NurseTasks() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [priorityFilter, setPriorityFilter] = useState<string>("all");
+    const [hiddenTaskIds, setHiddenTaskIds] = useState<Set<string>>(new Set());
 
     const { data: tasks = [], isLoading } = useQuery<Task[]>({
         queryKey: ["nurse-tasks"],
@@ -103,8 +104,11 @@ export default function NurseTasks() {
         mutationFn: async (taskId: string) => {
             return api.patch(`/nurse/tasks/${taskId}/complete`);
         },
-        onSuccess: () => {
+        onSuccess: (_, taskId) => {
             toast({ title: "Task completed", description: "Task marked as completed." });
+            if (taskId.startsWith('vital-')) {
+                setHiddenTaskIds(prev => new Set(prev).add(taskId));
+            }
             queryClient.invalidateQueries({ queryKey: ["nurse-tasks"] });
             queryClient.invalidateQueries({ queryKey: ["nurse-vitals"] });
         },
@@ -113,10 +117,12 @@ export default function NurseTasks() {
         },
     });
 
-    const filteredTasks = tasks.filter((task) => {
-        if (priorityFilter === "all") return true;
-        return task.priority === priorityFilter;
-    });
+    const filteredTasks = tasks
+        .filter((task) => !task.completed && !hiddenTaskIds.has(task.id)) // Hide completed and temporarily hidden tasks
+        .filter((task) => {
+            if (priorityFilter === "all") return true;
+            return task.priority === priorityFilter;
+        });
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((t) => t.completed).length;

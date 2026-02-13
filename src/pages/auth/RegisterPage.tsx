@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Lock, Mail, User, Phone, Calendar, ArrowRight, Briefcase, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import api from "@/lib/api";
 import { useAuthStore } from "@/hooks/useAuth";
 
@@ -152,7 +153,9 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex">
+        <>
+            <PublicHeader />
+            <div className="min-h-screen flex">
             {/* Left Panel - Branding */}
             <div className="hidden lg:flex lg:w-1/2 bg-clinexa-dark relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
@@ -501,6 +504,7 @@ export default function RegisterPage() {
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
+        </>
     );
 }

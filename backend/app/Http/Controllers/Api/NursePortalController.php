@@ -296,18 +296,21 @@ class NursePortalController extends Controller
      */
     public function completeTask(Request $request, $id)
     {
-        if (is_numeric($id)) {
-            $task = NurseTask::find($id);
-            if ($task) {
-                $task->completed = true;
-                $task->completed_by = $request->user()->id;
-                $task->completed_at = now();
-                $task->save();
-                return response()->json(['message' => 'Task marked as completed']);
-            }
+        // Auto-generated tasks (e.g., vital-xxx) are not stored in DB
+        if (str_starts_with($id, 'vital-')) {
+            return response()->json(['message' => 'Auto-generated task acknowledged']);
         }
 
-        return response()->json(['message' => 'Task marked as completed']);
+        $task = NurseTask::find($id);
+        if ($task) {
+            $task->completed = true;
+            $task->completed_by = $request->user()->id;
+            $task->completed_at = now();
+            $task->save();
+            return response()->json(['message' => 'Task marked as completed']);
+        }
+
+        return response()->json(['message' => 'Task not found'], 404);
     }
 
     /**
@@ -316,7 +319,7 @@ class NursePortalController extends Controller
     public function getProfile(Request $request)
     {
         $user = $request->user();
-        $employee = Employee::where('user_id', $user->id)->with('shift')->first();
+        $employee = Employee::where('user_id', $user->id)->with('shift', 'department')->first();
 
         return response()->json([
             'user' => [
@@ -330,12 +333,15 @@ class NursePortalController extends Controller
                 'employee_code' => $employee->employee_code,
                 'designation' => $employee->designation,
                 'department' => $employee->department?->name ?? 'N/A',
+                'dob' => $employee->dob ? $employee->dob->format('Y-m-d') : null,
+                'gender' => $employee->gender,
+                'address' => $employee->address,
+                'join_date' => $employee->join_date ? $employee->join_date->format('Y-m-d') : null,
                 'shift' => $employee->shift ? [
                     'name' => $employee->shift->name,
                     'start_time' => $employee->shift->start_time,
                     'end_time' => $employee->shift->end_time,
                 ] : null,
-                'join_date' => $employee->join_date,
             ] : null,
         ]);
     }
@@ -346,10 +352,15 @@ class NursePortalController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user();
+        $employee = Employee::where('user_id', $user->id)->first();
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'phone' => 'sometimes|string|max:20',
+            'designation' => 'sometimes|string|max:255',
+            'dob' => 'sometimes|date',
+            'gender' => 'sometimes|string|max:50',
+            'address' => 'sometimes|string',
             'current_password' => 'required_with:new_password|string',
             'new_password' => 'sometimes|string|min:8|confirmed',
         ]);
@@ -369,6 +380,22 @@ class NursePortalController extends Controller
         }
 
         $user->save();
+
+        if ($employee) {
+            if (isset($validated['designation'])) {
+                $employee->designation = $validated['designation'];
+            }
+            if (isset($validated['dob'])) {
+                $employee->dob = $validated['dob'];
+            }
+            if (isset($validated['gender'])) {
+                $employee->gender = $validated['gender'];
+            }
+            if (isset($validated['address'])) {
+                $employee->address = $validated['address'];
+            }
+            $employee->save();
+        }
 
         return response()->json(['message' => 'Profile updated successfully', 'user' => $user]);
     }

@@ -551,9 +551,11 @@ class DoctorPortalController extends Controller
             return response()->json(['message' => 'Doctor profile not found'], 404);
         }
 
+        $doctor->load('department');
+
         return response()->json([
             'user' => $user,
-            'doctor' => $doctor, // Should include bio now
+            'doctor' => $doctor,
         ]);
     }
 
@@ -571,26 +573,57 @@ class DoctorPortalController extends Controller
         }
 
         $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'name' => 'sometimes|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'specialization' => 'required|string|max:255',
-            'license_number' => 'required|string|max:255',
+            'specialization' => 'sometimes|string|max:255',
+            'license_number' => 'sometimes|string|max:255',
+            'qualification' => 'sometimes|string|max:255',
+            'consultation_fee' => 'sometimes|numeric|min:0',
+            'experience_years' => 'sometimes|integer|min:0',
             'bio' => 'nullable|string',
+            'current_password' => 'required_with:new_password|string',
+            'new_password' => 'sometimes|string|min:8|confirmed',
         ]);
 
         // Update User
-        $user->update([
-            'name' => $validated['first_name'] . ' ' . $validated['last_name'],
-            'phone' => $validated['phone'],
-        ]);
+        if (isset($validated['name'])) {
+            $user->name = $validated['name'];
+        }
+        if (isset($validated['phone'])) {
+            $user->phone = $validated['phone'];
+        }
+
+        // Password change
+        if (isset($validated['current_password']) && isset($validated['new_password'])) {
+            if (!\Illuminate\Support\Facades\Hash::check($validated['current_password'], $user->password)) {
+                return response()->json(['message' => 'Current password is incorrect'], 422);
+            }
+            $user->password = \Illuminate\Support\Facades\Hash::make($validated['new_password']);
+        }
+
+        $user->save();
 
         // Update Doctor
-        $doctor->update([
-            'specialization' => $validated['specialization'],
-            'license_number' => $validated['license_number'],
-            'bio' => $validated['bio'],
-        ]);
+        if (isset($validated['specialization'])) {
+            $doctor->specialization = $validated['specialization'];
+        }
+        if (isset($validated['license_number'])) {
+            $doctor->license_number = $validated['license_number'];
+        }
+        if (isset($validated['qualification'])) {
+            $doctor->qualification = $validated['qualification'];
+        }
+        if (isset($validated['consultation_fee'])) {
+            $doctor->consultation_fee = $validated['consultation_fee'];
+        }
+        if (isset($validated['experience_years'])) {
+            $doctor->experience_years = $validated['experience_years'];
+        }
+        if (isset($validated['bio'])) {
+            $doctor->bio = $validated['bio'];
+        }
+
+        $doctor->save();
 
         return response()->json([
             'message' => 'Profile updated successfully',

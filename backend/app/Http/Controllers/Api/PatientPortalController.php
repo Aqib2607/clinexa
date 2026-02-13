@@ -54,14 +54,63 @@ class PatientPortalController extends Controller
         return response()->json(['link' => url("/api/patient/download/{$token}")]);
     }
 
+    /**
+     * Download secure link for lab/radiology results
+     */
     public function downloadSecure(Request $request, $token)
     {
+        // Check if token is a resource identifier (e.g., lab_result-xxx or radiology_result-xxx)
+        if (str_contains($token, '-')) {
+            [$resourceType, $resourceId] = explode('-', $token, 2);
+            
+            $user = $request->user();
+            $patient = Patient::where('email', $user->email)->first();
+            
+            if (!$patient) {
+                return response()->json(['error' => 'Patient record not found.'], 404);
+            }
+
+            if ($resourceType === 'lab_result') {
+                $result = \App\Models\LabResult::whereHas('visit', function ($q) use ($patient) {
+                    $q->where('patient_id', $patient->id);
+                })->where('id', $resourceId)->first();
+
+                if ($result) {
+                    return response()->json([
+                        'message' => 'Lab result found',
+                        'data' => [
+                            'id' => $result->id,
+                            'test_name' => $result->test->name ?? 'Lab Test',
+                            'result' => $result->result,
+                            'status' => $result->status,
+                        ]
+                    ]);
+                }
+            } elseif ($resourceType === 'radiology_result') {
+                $result = \App\Models\RadiologyResult::whereHas('study.visit', function ($q) use ($patient) {
+                    $q->where('patient_id', $patient->id);
+                })->where('id', $resourceId)->first();
+
+                if ($result) {
+                    return response()->json([
+                        'message' => 'Radiology result found',
+                        'data' => [
+                            'id' => $result->id,
+                            'study_name' => $result->study->study_name ?? 'Radiology Scan',
+                            'findings' => $result->findings,
+                            'status' => 'finalized',
+                        ]
+                    ]);
+                }
+            }
+
+            return response()->json(['error' => 'Record not found'], 404);
+        }
+
+        // Original secure link logic
         $link = SecureLink::where('token', $token)
             ->where('expires_at', '>', now())
             ->firstOrFail();
-
-        // Validate Payment Status Here (Strict Requirement)
-        // Check if Bill associated with this resource is Paid.
 
         $link->increment('access_count');
 
@@ -345,12 +394,14 @@ class PatientPortalController extends Controller
                 'id' => $patient->id,
                 'uhid' => $patient->uhid,
                 'name' => $patient->name,
-                'dob' => $patient->dob,
+                'dob' => $patient->dob ? $patient->dob->format('Y-m-d') : null,
                 'gender' => $patient->gender,
                 'phone' => $patient->phone,
                 'email' => $patient->email,
                 'address' => $patient->address,
-                'blood_type' => $patient->blood_group,
+                'blood_group' => $patient->blood_group,
+                'guardian_name' => $patient->guardian_name,
+                'guardian_phone' => $patient->guardian_phone,
             ],
         ]);
     }
@@ -368,22 +419,40 @@ class PatientPortalController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
+            'dob' => 'sometimes|date',
+            'gender' => 'sometimes|string|max:50',
             'phone' => 'sometimes|string|max:20',
-            'address' => 'sometimes|string|max:500',
+            'address' => 'sometimes|string',
+            'blood_group' => 'sometimes|string|max:10',
+            'guardian_name' => 'sometimes|string|max:255',
+            'guardian_phone' => 'sometimes|string|max:20',
             'current_password' => 'required_with:new_password|string',
             'new_password' => 'sometimes|string|min:8|confirmed',
         ]);
 
         if (isset($validated['name'])) {
-            $user->name = $validated['name'];
             $patient->name = $validated['name'];
         }
+        if (isset($validated['dob'])) {
+            $patient->dob = $validated['dob'];
+        }
+        if (isset($validated['gender'])) {
+            $patient->gender = $validated['gender'];
+        }
         if (isset($validated['phone'])) {
-            $user->phone = $validated['phone'];
             $patient->phone = $validated['phone'];
         }
         if (isset($validated['address'])) {
             $patient->address = $validated['address'];
+        }
+        if (isset($validated['blood_group'])) {
+            $patient->blood_group = $validated['blood_group'];
+        }
+        if (isset($validated['guardian_name'])) {
+            $patient->guardian_name = $validated['guardian_name'];
+        }
+        if (isset($validated['guardian_phone'])) {
+            $patient->guardian_phone = $validated['guardian_phone'];
         }
 
         // Password change
