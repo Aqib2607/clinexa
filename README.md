@@ -131,6 +131,14 @@ I love building tools that make healthcare smarter! If you find this project use
 
 ---
 
+### 🛡️ **License**
+
+Copyright (c) 2026 Aqib Jawwad. **All Rights Reserved.**
+
+This project is proprietary. Unauthorized copying, modification, distribution, or use of this software and its elements is strictly prohibited. For inquiries, contact [clinexabd@gmail.com](mailto:clinexabd@gmail.com).
+
+---
+
 <p align="center">
   <b>Developed with ❤️ by <a href="https://aqibjawwad.me/">Aqib Jawwad</a></b>
 </p>
