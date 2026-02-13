@@ -10,6 +10,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 // Public Pages
 import HomePage from "@/pages/public/HomePage";
+import { ProtectedHomepage } from "@/components/ProtectedHomepage";
 import AboutPage from "@/pages/public/AboutPage";
 import DepartmentsPage from "@/pages/public/DepartmentsPage";
 import DepartmentDetailPage from "@/pages/public/DepartmentDetailPage";
@@ -83,7 +84,7 @@ const App = () => (
         <Routes>
           {/* Public Routes */}
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<ProtectedHomepage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/departments" element={<DepartmentsPage />} />
             <Route path="/departments/:slug" element={<DepartmentDetailPage />} />

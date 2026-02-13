@@ -87,9 +87,9 @@ export default function HomePage() {
             <div className="hidden lg:block animate-slide-up">
               <div className="relative">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-white/10">
-                  <img 
-                    src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80" 
-                    alt="Modern hospital facility" 
+                  <img
+                    src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80"
+                    alt="Modern hospital facility"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -148,7 +148,7 @@ export default function HomePage() {
               We combine cutting-edge medical technology with compassionate care to deliver the best possible outcomes for our patients.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-8">
             {features.map((feature, index) => (
               <div
                 key={index}
@@ -183,7 +183,7 @@ export default function HomePage() {
               </Link>
             </Button>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
             {departments.map((dept, index) => (
               <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
                 <DepartmentCard {...dept} href="/departments" />
@@ -210,7 +210,7 @@ export default function HomePage() {
               </Link>
             </Button>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
             {doctors.map((doctor, index) => (
               <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
                 <DoctorCard {...doctor} />

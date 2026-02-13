@@ -6,9 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from "lucide-react";
 
 const contactInfo = [
-  { icon: MapPin, title: "Address", content: "123 Medical Center Drive, Healthcare City, HC 12345" },
-  { icon: Phone, title: "Phone", content: "+1 (800) 123-4567" },
-  { icon: Mail, title: "Email", content: "info@clinexa.com" },
+  { icon: MapPin, title: "Address", content: "Hafiz Nagar, Sonadanga, Khulna, Bangladesh" },
+  { icon: Phone, title: "Phone", content: "+880 1946-664836" },
+  { icon: Mail, title: "Email", content: "clinexabd@gmail.com" },
   { icon: Clock, title: "Hours", content: "24/7 Emergency Services" },
 ];
 
@@ -73,7 +73,7 @@ export default function ContactPage() {
               {/* Google Map */}
               <div className="aspect-video rounded-xl overflow-hidden shadow-card">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9476519598093!2d-73.99185492346368!3d40.74844097138558!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1710000000000!5m2!1sen!2sus"
+                  src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3665.3776662825376!2d89.53555631496727!3d22.82063968502214!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjLCsDQ5JzE0LjMiTiA4OcKwMzInMTYuMCJF!5e0!3m2!1sen!2sbd!4v1710000000000!5m2!1sen!2sbd"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

@@ -205,9 +205,11 @@ export function DashboardLayout({ role: propRole, userName: propUserName = "User
         {/* Sidebar Header */}
         <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
-            </div>
+            <img
+              src="/favicon.svg"
+              alt="Clinexa Logo"
+              className="h-9 w-9"
+            />
             <span className="text-lg font-bold text-sidebar-foreground">Clinexa</span>
           </Link>
           <button

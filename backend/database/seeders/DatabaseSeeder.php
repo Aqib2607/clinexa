@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             DoctorSeeder::class,
             SmsTemplateSeeder::class,
             SystemUpdateSeeder::class,
+            SettingsSeeder::class,
         ]);
     }
 }

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone, Clock, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, Clock, ChevronDown, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -15,6 +17,8 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
+  const { data: user } = useUser();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -36,7 +40,7 @@ export function PublicHeader() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>Emergency: +1 (800) 123-4567</span>
+                <span>Emergency: +8801946664836</span>
               </div>
               <div className="hidden md:flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -44,27 +48,34 @@ export function PublicHeader() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/login" className="hover:text-primary transition-colors">
-                Staff Login
-              </Link>
+              {isAuthenticated && user?.role === 'patient' ? (
+                <Link to="/patient" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                  <User className="h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              ) : (
+                <Link to="/login" className="hover:text-primary transition-colors">
+                  Staff Login
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Navigation */}
-      <nav className={`transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/80 backdrop-blur-xl shadow-lg' 
-          : 'bg-white shadow-nav'
-      }`}>
+      <nav className={`transition-all duration-300 ${isScrolled
+        ? 'bg-white/80 backdrop-blur-xl shadow-lg'
+        : 'bg-white shadow-nav'
+        }`}>
         <div className="container-wide">
           <div className="flex h-16 lg:h-20 items-center justify-between">
-            {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-              <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl lg:text-2xl">C</span>
-              </div>
+              <img
+                src="/favicon.svg"
+                alt="Clinexa Logo"
+                className="h-10 w-10 lg:h-12 lg:w-12"
+              />
               <div>
                 <span className="text-xl lg:text-2xl font-bold text-clinexa-dark">Clinexa</span>
                 <p className="text-xs text-muted-foreground hidden sm:block">Hospital Management System</p>
@@ -77,11 +88,10 @@ export function PublicHeader() {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-clinexa-neutral hover:bg-accent hover:text-accent-foreground"
-                  }`}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive(item.href)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-clinexa-neutral hover:bg-accent hover:text-accent-foreground"
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -119,11 +129,10 @@ export function PublicHeader() {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-clinexa-neutral hover:bg-accent"
-                  }`}
+                  className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${isActive(item.href)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-clinexa-neutral hover:bg-accent"
+                    }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}

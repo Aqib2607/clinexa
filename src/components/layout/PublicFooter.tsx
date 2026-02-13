@@ -65,11 +65,11 @@ export function PublicFooter() {
           {/* Brand & Contact */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">
-                  {hospitalName.charAt(0)}
-                </span>
-              </div>
+              <img
+                src="/favicon.svg"
+                alt="Clinexa Logo"
+                className="h-10 w-10"
+              />
               <span className="text-xl font-bold text-white">{hospitalName}</span>
             </Link>
             <p className="text-sm text-clinexa-secondary/80 mb-6">
@@ -143,25 +143,33 @@ export function PublicFooter() {
             </p>
             <div className="flex gap-3 mb-6">
               <a
-                href="#"
+                href="https://www.facebook.com/TheAsmodeus2607"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-10 w-10 rounded-lg bg-sidebar-accent flex items-center justify-center hover:bg-primary transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://x.com/AqibJawwadNahin"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-10 w-10 rounded-lg bg-sidebar-accent flex items-center justify-center hover:bg-primary transition-colors"
               >
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/in/aqib-jawwad-nahin-598288278/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-10 w-10 rounded-lg bg-sidebar-accent flex items-center justify-center hover:bg-primary transition-colors"
               >
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/_.the_asmodeus._/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-10 w-10 rounded-lg bg-sidebar-accent flex items-center justify-center hover:bg-primary transition-colors"
               >
                 <Instagram className="h-5 w-5" />
@@ -186,8 +194,18 @@ export function PublicFooter() {
       <div className="border-t border-sidebar-border">
         <div className="container-wide py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-clinexa-secondary/60">
-            <p>© {new Date().getFullYear()} {hospitalName} Hospital Management System. All rights reserved.</p>
-            <p>Designed for healthcare excellence</p>
+            <p>© {new Date().getFullYear()} {hospitalName}. All rights reserved.</p>
+            <p>
+              Created by{' '}
+              <a
+                href="https://aqibjawwad.me/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline transition-colors"
+              >
+                Aqib Jawwad
+              </a>
+            </p>
           </div>
         </div>
       </div>

@@ -112,23 +112,23 @@ export default function DepartmentsPage() {
       <section className="py-12 lg:py-20 bg-background">
         <div className="container-wide">
           {loading ? (
-             <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-             </div>
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
           ) : filteredDepartments.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
               {filteredDepartments.map((dept, index) => (
                 <div
                   key={dept.id}
                   className="animate-slide-up"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <DepartmentCard 
+                  <DepartmentCard
                     name={dept.name}
                     description={dept.description || "Medical department providing specialized care."}
                     icon={getIcon(dept.name)}
                     doctorCount={dept.doctors_count}
-                    href={`/departments/${dept.name.toLowerCase().replace(/\s+/g, '-')}`} 
+                    href={`/departments/${dept.name.toLowerCase().replace(/\s+/g, '-')}`}
                   />
                 </div>
               ))}

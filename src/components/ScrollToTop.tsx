@@ -40,7 +40,7 @@ export const ScrollToTop = () => {
       variant="secondary"
       size="icon"
       className={cn(
-        "fixed bottom-8 right-8 z-50 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1",
+        "fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 transition-all duration-300 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 h-12 w-12 sm:h-14 sm:w-14",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}
       onClick={scrollToTop}

@@ -7,8 +7,8 @@ export function FloatingButtons() {
   const [isScrollButtonVisible, setIsScrollButtonVisible] = useState(false);
 
   // Replace with your actual numbers/links
-  const whatsappNumber = "18001234567"; // Format: country code + number (no + or spaces)
-  const facebookPageUrl = "https://facebook.com/clinexa";
+  const whatsappNumber = "8801946664836"; // Format: country code + number (no + or spaces)
+  const facebookPageUrl = "https://www.facebook.com/TheAsmodeus2607";
 
   useEffect(() => {
     const toggleScrollButtonVisibility = () => {
@@ -35,9 +35,8 @@ export function FloatingButtons() {
   };
 
   return (
-    <div className={`fixed right-4 sm:right-6 z-40 flex flex-col gap-3 transition-all duration-300 ${
-      isScrollButtonVisible ? 'bottom-20 sm:bottom-24' : 'bottom-4 sm:bottom-6'
-    }`}>
+    <div className={`fixed right-4 sm:right-6 z-40 flex flex-col gap-3 transition-all duration-300 ${isScrollButtonVisible ? 'bottom-20 sm:bottom-24' : 'bottom-4 sm:bottom-6'
+      }`}>
       {/* WhatsApp Button */}
       <div className="relative group">
         <button
@@ -53,11 +52,10 @@ export function FloatingButtons() {
             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
           </span>
         </button>
-        
+
         {/* Tooltip - Hidden on mobile */}
-        <div className={`hidden sm:block absolute right-16 top-1/2 -translate-y-1/2 transition-all duration-300 ${
-          whatsappHover ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'
-        }`}>
+        <div className={`hidden sm:block absolute right-16 top-1/2 -translate-y-1/2 transition-all duration-300 ${whatsappHover ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'
+          }`}>
           <div className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg whitespace-nowrap shadow-lg">
             Chat with us on WhatsApp
             <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full">
@@ -78,11 +76,10 @@ export function FloatingButtons() {
         >
           <Facebook className="h-5 w-5 sm:h-6 sm:w-6" fill="currentColor" />
         </button>
-        
+
         {/* Tooltip - Hidden on mobile */}
-        <div className={`hidden sm:block absolute right-16 top-1/2 -translate-y-1/2 transition-all duration-300 ${
-          facebookHover ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'
-        }`}>
+        <div className={`hidden sm:block absolute right-16 top-1/2 -translate-y-1/2 transition-all duration-300 ${facebookHover ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'
+          }`}>
           <div className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg whitespace-nowrap shadow-lg">
             Follow us on Facebook
             <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full">

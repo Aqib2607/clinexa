@@ -42,7 +42,7 @@ export default function DoctorsPage() {
         // Extract unique specialties
         const uniqueSpecialties = Array.from(new Set(doctorData.map((d: Doctor) => d.specialization))) as string[];
         setSpecialties(["All Specialties", ...uniqueSpecialties]);
-        
+
       } catch (error) {
         console.error("Failed to fetch doctors", error);
       } finally {
@@ -112,22 +112,22 @@ export default function DoctorsPage() {
       <section className="py-12 lg:py-20 bg-background">
         <div className="container-wide">
           {loading ? (
-             <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-             </div>
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
           ) : filteredDoctors.length > 0 ? (
             <>
               <p className="text-muted-foreground mb-6">
                 Showing {filteredDoctors.length} doctor{filteredDoctors.length !== 1 ? 's' : ''}
               </p>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
                 {filteredDoctors.map((doctor, index) => (
                   <div
                     key={doctor.id}
                     className="animate-slide-up"
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    <DoctorCard 
+                    <DoctorCard
                       name={doctor.user.name}
                       specialty={doctor.specialization}
                       experience={`${doctor.experience_years} years`}

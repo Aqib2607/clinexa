@@ -27,7 +27,7 @@ export function DoctorCard({
   doctorId,
 }: DoctorCardProps) {
   return (
-    <div className={cn("bg-card rounded-xl overflow-hidden shadow-card card-hover", className)}>
+    <div className={cn("bg-card rounded-xl overflow-hidden shadow-card card-hover h-full flex flex-col", className)}>
       {/* Image */}
       <div className="aspect-[4/3] bg-secondary relative overflow-hidden">
         {image ? (
@@ -47,11 +47,11 @@ export function DoctorCard({
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-card-foreground">{name}</h3>
-        <p className="text-sm text-primary font-medium mb-3">{specialty}</p>
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="text-lg font-semibold text-card-foreground line-clamp-1">{name}</h3>
+        <p className="text-sm text-primary font-medium mb-3 line-clamp-1">{specialty}</p>
 
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4 flex-1">
           {rating && (
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-warning text-warning" />
@@ -61,9 +61,9 @@ export function DoctorCard({
           {experience && <span>{experience}</span>}
         </div>
 
-        <Button asChild variant="outline" className="w-full" size="sm">
-          <Link to={doctorId ? `/appointment?doctor=${doctorId}` : (href || "/appointment")}>
-            <Calendar className="h-4 w-4 mr-2" />
+        <Button asChild variant="outline" className="w-full h-auto whitespace-nowrap text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-4">
+          <Link to={doctorId ? `/appointment?doctor=${doctorId}` : (href || "/appointment")} className="flex items-center justify-center w-full">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Book Appointment
           </Link>
         </Button>
