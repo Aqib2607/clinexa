@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/hooks/useAuth";
+import { getImageUrl } from "@/lib/utils";
 import {
     Card,
     CardContent,
@@ -16,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, User } from "lucide-react";
 
 export default function Settings() {
     const { toast } = useToast();
@@ -37,6 +38,9 @@ export default function Settings() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (profile) {
@@ -77,11 +81,24 @@ export default function Settings() {
 
     const updateProfileMutation = useMutation({
         mutationFn: async () => {
-            return api.post(`/${role}/profile`, formData);
+            const data = new FormData();
+            Object.entries(formData).forEach(([key, value]) => {
+                if (value) {
+                    data.append(key, value);
+                }
+            });
+            if (imageFile) {
+                data.append('photo', imageFile);
+            }
+            return api.post(`/${role}/profile`, data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
         },
         onSuccess: () => {
             toast({ title: "Success", description: "Profile updated successfully." });
             queryClient.invalidateQueries({ queryKey: [`${role}-profile`] });
+            setImageFile(null);
+            // Don't clear imagePreview immediately - wait for refetch to complete
         },
         onError: () => {
             toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
@@ -138,6 +155,43 @@ export default function Settings() {
                         <CardContent className="space-y-4">
                             {role === "patient" && (
                                 <>
+                                    <div className="flex items-center gap-6 pb-4 border-b">
+                                        <div className="relative">
+                                            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                                                {imagePreview || getImageUrl(profile?.patient?.photo_url) ? (
+                                                    <img src={imagePreview || getImageUrl(profile?.patient?.photo_url) || ""} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <User className="w-12 h-12 text-muted-foreground" />
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="profile-photo">Profile Photo</Label>
+                                            <input
+                                                id="profile-photo"
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setImageFile(file);
+                                                        setImagePreview(URL.createObjectURL(file));
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                <Upload className="w-4 h-4 mr-2" />
+                                                Upload Photo
+                                            </Button>
+                                        </div>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="uhid">UHID</Label>
                                         <Input id="uhid" value={profile?.patient?.uhid || "N/A"} disabled autoComplete="off" />

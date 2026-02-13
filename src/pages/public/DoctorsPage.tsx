@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DoctorCard } from "@/components/cards/DoctorCard";
 import { Search, Filter } from "lucide-react";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 
 interface Doctor {
   id: number;
@@ -14,6 +15,7 @@ interface Doctor {
   specialization: string;
   experience_years: number;
   is_active: boolean;
+  photo_url?: string;
   user: {
     name: string;
     email: string;
@@ -33,10 +35,7 @@ export default function DoctorsPage() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await api.get('/doctors');
-        // The API returns paginated data: { current_page: 1, data: [...], ... }
-        // We'll use response.data.data if paginated, or response.data if we change API to return all
-        // The current DoctorController::index returns query->paginate(15)
+        const response = await api.get('/doctors?per_page=100');
         const doctorData = response.data.data || [];
         setDoctors(doctorData);
 
@@ -134,7 +133,8 @@ export default function DoctorsPage() {
                       experience={`${doctor.experience_years} years`}
                       rating={5.0} // Placeholder
                       availability={doctor.is_active ? "Available" : "Unavailable"}
-                      image={`https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.user.name)}&background=random`}
+                      image={getImageUrl(doctor.photo_url) || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.user.name)}&background=random`}
+                      doctorId={doctor.id}
                     />
                   </div>
                 ))}

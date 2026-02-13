@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,9 @@ const timeSlots = [
 import { Department, Doctor } from "@/types";
 
 export default function AppointmentPage() {
+  const [searchParams] = useSearchParams();
+  const preselectedDoctorId = searchParams.get('doctor');
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     department_id: "" as string | number,
@@ -52,6 +55,25 @@ export default function AppointmentPage() {
       .then(res => setDepartments(res.data))
       .catch(err => console.error("Failed to load departments", err));
   }, []);
+
+  // Handle preselected doctor
+  useEffect(() => {
+    if (preselectedDoctorId) {
+      api.get(`/doctors/${preselectedDoctorId}`)
+        .then(res => {
+          const doctor = res.data;
+          setFormData(prev => ({
+            ...prev,
+            doctor_id: doctor.id,
+            doctor_name: doctor.user?.name || doctor.specialization,
+            department_id: doctor.department_id,
+            department_name: doctor.department?.name || ''
+          }));
+          setCurrentStep(3); // Skip to schedule step
+        })
+        .catch(err => console.error("Failed to load doctor", err));
+    }
+  }, [preselectedDoctorId]);
 
   // Fetch Doctors when Department Changes
   useEffect(() => {

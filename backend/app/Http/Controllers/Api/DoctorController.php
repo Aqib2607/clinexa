@@ -24,7 +24,8 @@ class DoctorController extends Controller
             $query->where('specialization', 'like', '%' . $request->specialization . '%');
         }
 
-        return response()->json($query->paginate(15));
+        $perPage = $request->get('per_page', 15);
+        return response()->json($query->paginate($perPage));
     }
 
     /**

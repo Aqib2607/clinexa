@@ -12,6 +12,7 @@ interface DoctorCardProps {
   availability?: string;
   href?: string;
   className?: string;
+  doctorId?: number;
 }
 
 export function DoctorCard({
@@ -23,6 +24,7 @@ export function DoctorCard({
   availability,
   href,
   className,
+  doctorId,
 }: DoctorCardProps) {
   return (
     <div className={cn("bg-card rounded-xl overflow-hidden shadow-card card-hover", className)}>
@@ -60,7 +62,7 @@ export function DoctorCard({
         </div>
 
         <Button asChild variant="outline" className="w-full" size="sm">
-          <Link to={href || "/appointment"}>
+          <Link to={doctorId ? `/appointment?doctor=${doctorId}` : (href || "/appointment")}>
             <Calendar className="h-4 w-4 mr-2" />
             Book Appointment
           </Link>

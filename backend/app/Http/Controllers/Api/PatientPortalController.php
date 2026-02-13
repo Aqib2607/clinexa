@@ -8,6 +8,7 @@ use App\Models\PatientOtp;
 use App\Models\SecureLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PatientPortalController extends Controller
@@ -402,6 +403,7 @@ class PatientPortalController extends Controller
                 'blood_group' => $patient->blood_group,
                 'guardian_name' => $patient->guardian_name,
                 'guardian_phone' => $patient->guardian_phone,
+                'photo_url' => $patient->photo_url,
             ],
         ]);
     }
@@ -417,18 +419,24 @@ class PatientPortalController extends Controller
             return response()->json(['error' => 'Patient record not found.'], 404);
         }
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'dob' => 'sometimes|date',
-            'gender' => 'sometimes|string|max:50',
-            'phone' => 'sometimes|string|max:20',
-            'address' => 'sometimes|string',
-            'blood_group' => 'sometimes|string|max:10',
-            'guardian_name' => 'sometimes|string|max:255',
-            'guardian_phone' => 'sometimes|string|max:20',
-            'current_password' => 'required_with:new_password|string',
-            'new_password' => 'sometimes|string|min:8|confirmed',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:255',
+                'dob' => 'sometimes|date',
+                'gender' => 'sometimes|string|max:50',
+                'phone' => 'sometimes|string|max:20',
+                'address' => 'sometimes|string',
+                'blood_group' => 'sometimes|string|max:10',
+                'guardian_name' => 'sometimes|string|max:255',
+                'guardian_phone' => 'sometimes|string|max:20',
+                'current_password' => 'sometimes|string',
+                'new_password' => 'sometimes|string|min:8',
+                'new_password_confirmation' => 'sometimes|string',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Profile update validation failed', ['errors' => $e->errors(), 'request' => $request->except('photo')]);
+            throw $e;
+        }
 
         if (isset($validated['name'])) {
             $patient->name = $validated['name'];
@@ -455,8 +463,24 @@ class PatientPortalController extends Controller
             $patient->guardian_phone = $validated['guardian_phone'];
         }
 
+        // Handle photo upload
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $file = $request->file('photo');
+            $filename = 'patient_' . $patient->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->move(public_path('uploads/patients'), $filename);
+            if ($path) {
+                $patient->photo_url = '/uploads/patients/' . $filename;
+            }
+        }
+
         // Password change
-        if (isset($validated['current_password']) && isset($validated['new_password'])) {
+        if (isset($validated['new_password'])) {
+            if (!isset($validated['current_password'])) {
+                return response()->json(['message' => 'Current password is required'], 422);
+            }
+            if (!isset($validated['new_password_confirmation']) || $validated['new_password'] !== $validated['new_password_confirmation']) {
+                return response()->json(['message' => 'Password confirmation does not match'], 422);
+            }
             if (!\Illuminate\Support\Facades\Hash::check($validated['current_password'], $user->password)) {
                 return response()->json(['message' => 'Current password is incorrect'], 422);
             }

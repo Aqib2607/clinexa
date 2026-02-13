@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import api from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import { ArrowLeft, User, Clock, Award } from "lucide-react";
 
 interface Doctor {
@@ -22,6 +23,10 @@ interface Department {
   overview?: string;
   services?: string[];
   facilities?: string[];
+  image_url?: string;
+  conditions_treated?: string[];
+  technologies?: string[];
+  why_choose_us?: string;
 }
 
 export default function DepartmentDetailPage() {
@@ -77,6 +82,17 @@ export default function DepartmentDetailPage() {
         </div>
       </section>
 
+      {department?.image_url && (
+        <section className="relative h-96 overflow-hidden">
+          <img 
+            src={department.image_url} 
+            alt={department.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+        </section>
+      )}
+
       <section className="py-12 lg:py-20 bg-muted/30">
         <div className="container-wide">
           {department?.overview && (
@@ -115,6 +131,43 @@ export default function DepartmentDetailPage() {
               </div>
             )}
           </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {department?.conditions_treated && Array.isArray(department.conditions_treated) && department.conditions_treated.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4">Conditions Treated</h2>
+                <ul className="space-y-2">
+                  {department.conditions_treated.map((condition, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span className="text-muted-foreground">{condition}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {department?.technologies && Array.isArray(department.technologies) && department.technologies.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4">Technologies Used</h2>
+                <ul className="space-y-2">
+                  {department.technologies.map((tech, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span className="text-muted-foreground">{tech}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {department?.why_choose_us && (
+            <div className="bg-primary/5 p-6 rounded-lg">
+              <h2 className="text-2xl font-bold mb-4">Why Choose Us</h2>
+              <p className="text-muted-foreground leading-relaxed">{department.why_choose_us}</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -131,9 +184,9 @@ export default function DepartmentDetailPage() {
                 <Card key={doctor.id}>
                   <CardHeader>
                     <div className="flex items-center gap-3 mb-2">
-                      {doctor.photo_url ? (
+                      {getImageUrl(doctor.photo_url) ? (
                         <img 
-                          src={doctor.photo_url} 
+                          src={getImageUrl(doctor.photo_url)!} 
                           alt={doctor.name}
                           className="h-12 w-12 rounded-full object-cover"
                         />
@@ -163,7 +216,7 @@ export default function DepartmentDetailPage() {
                       </div>
                     </div>
                     <Button asChild className="w-full mt-4">
-                      <Link to="/appointment">Book Appointment</Link>
+                      <Link to={`/appointment?doctor=${doctor.id}`}>Book Appointment</Link>
                     </Button>
                   </CardContent>
                 </Card>

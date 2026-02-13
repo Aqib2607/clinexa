@@ -124,6 +124,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'role' => 'required|string|in:patient,doctor,nurse,super_admin',
             'email' => 'required|email',
             'password' => 'required',
         ]);
@@ -135,7 +136,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->where('role', $request->role)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([

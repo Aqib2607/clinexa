@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Phone, Clock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,24 @@ const navigation = [
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="sticky top-0 z-50 w-full transition-all duration-300">
       {/* Top Bar */}
-      <div className="bg-clinexa-dark text-clinexa-secondary">
+      <div className={`bg-clinexa-dark text-clinexa-secondary transition-all duration-300 ${isScrolled ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
         <div className="container-wide">
           <div className="flex flex-col sm:flex-row items-center justify-between py-2 text-sm gap-2 sm:gap-0">
             <div className="flex items-center gap-6">
@@ -43,7 +53,11 @@ export function PublicHeader() {
       </div>
 
       {/* Main Navigation */}
-      <nav className="bg-white shadow-nav">
+      <nav className={`transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/80 backdrop-blur-xl shadow-lg' 
+          : 'bg-white shadow-nav'
+      }`}>
         <div className="container-wide">
           <div className="flex h-16 lg:h-20 items-center justify-between">
             {/* Logo */}

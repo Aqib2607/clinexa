@@ -128,8 +128,8 @@ export default function HomePage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <p className="text-3xl lg:text-4xl font-bold text-primary">{stat.value}</p>
-                <p className="text-sm lg:text-base text-muted-foreground mt-1">{stat.label}</p>
+                <p className="text-3xl lg:text-5xl font-black text-clinexa-dark tracking-tight text-shadow-luxury">{stat.value}</p>
+                <p className="text-sm lg:text-base text-foreground/80 font-medium mt-2 tracking-wide">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -152,11 +152,11 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-card rounded-xl p-6 shadow-card card-hover animate-slide-up"
+                className="bg-card rounded-xl p-6 shadow-card card-hover group animate-slide-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="h-7 w-7 text-primary" />
+                <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                  <feature.icon className="h-7 w-7 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <h3 className="text-lg font-semibold text-card-foreground mb-2">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>

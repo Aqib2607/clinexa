@@ -101,8 +101,7 @@ class DoctorSeeder extends Seeder
                         'email_verified_at' => now(),
                     ]);
 
-                    $photoId = rand(1, 100);
-                    $photoUrl = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=faces&q=80&sig={$photoId}";
+                    $photoUrl = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=faces&q=80&sig=" . ($dept->id * 10 + $index);
 
                     DB::table('doctors')->insert([
                         'user_id' => $user->id,

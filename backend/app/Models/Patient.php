@@ -22,6 +22,7 @@ class Patient extends Model
         'guardian_name',
         'guardian_phone',
         'blood_group',
+        'photo_url',
     ];
 
     protected $casts = [

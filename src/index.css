@@ -3,42 +3,42 @@
 @tailwind utilities;
 
 /* Clinexa Hospital Management System - Design System
-   LOCKED COLOR PALETTE - DO NOT CHANGE
-   Primary: #FC5C02 (Orange - CTAs, highlights)
-   Secondary: #E2CEAE (Warm Beige - backgrounds, cards)
-   Neutral: #7C6B51 (Brown - text)
-   Dark: #312B1E (Dark Brown - headers, footer)
+   COLOR PALETTE
+   Primary: #FFC700 (Gold Yellow - CTAs, highlights)
+   Secondary: #FFDE69 (Light Yellow - backgrounds, accents)
+   Dark: #111111 (Almost Black - text, headers)
+   White: #FFFFFF (White - backgrounds)
 */
 
 @layer base {
   :root {
     /* Core Clinexa Palette - HSL conversions */
-    --clinexa-primary: 21 98% 50%;
-    --clinexa-secondary: 34 49% 78%;
-    --clinexa-neutral: 34 21% 40%;
-    --clinexa-dark: 35 26% 15%;
+    --clinexa-primary: 47 100% 50%;
+    --clinexa-secondary: 47 100% 71%;
+    --clinexa-neutral: 0 0% 45%;
+    --clinexa-dark: 0 0% 7%;
 
     /* Semantic Tokens */
-    --background: 40 30% 97%;
-    --foreground: 35 26% 15%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
 
-    --card: 34 49% 92%;
-    --card-foreground: 35 26% 15%;
+    --card: 47 100% 94%;
+    --card-foreground: 0 0% 7%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 35 26% 15%;
+    --popover-foreground: 0 0% 7%;
 
-    --primary: 21 98% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 47 100% 50%;
+    --primary-foreground: 0 0% 7%;
 
-    --secondary: 34 49% 78%;
-    --secondary-foreground: 35 26% 15%;
+    --secondary: 47 100% 71%;
+    --secondary-foreground: 0 0% 7%;
 
-    --muted: 34 30% 90%;
-    --muted-foreground: 34 21% 40%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 34 49% 85%;
-    --accent-foreground: 35 26% 15%;
+    --accent: 47 100% 85%;
+    --accent-foreground: 0 0% 7%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -47,60 +47,60 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 35 26% 15%;
+    --warning-foreground: 0 0% 7%;
 
-    --border: 34 30% 82%;
-    --input: 34 30% 85%;
-    --ring: 21 98% 50%;
+    --border: 0 0% 90%;
+    --input: 0 0% 92%;
+    --ring: 47 100% 50%;
 
     --radius: 0.5rem;
 
     /* Dashboard specific */
-    --sidebar-background: 35 26% 15%;
-    --sidebar-foreground: 34 49% 90%;
-    --sidebar-primary: 21 98% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 35 26% 22%;
-    --sidebar-accent-foreground: 34 49% 90%;
-    --sidebar-border: 35 26% 25%;
-    --sidebar-ring: 21 98% 50%;
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 47 100% 50%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 47 100% 50%;
 
     /* Chart colors for dashboards */
-    --chart-1: 21 98% 50%;
-    --chart-2: 34 49% 78%;
-    --chart-3: 34 21% 40%;
-    --chart-4: 35 26% 15%;
+    --chart-1: 47 100% 50%;
+    --chart-2: 47 100% 71%;
+    --chart-3: 0 0% 45%;
+    --chart-4: 0 0% 7%;
     --chart-5: 142 71% 45%;
   }
 
   .dark {
-    --background: 35 26% 10%;
-    --foreground: 34 49% 92%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
 
-    --card: 35 26% 15%;
-    --card-foreground: 34 49% 92%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 35 26% 12%;
-    --popover-foreground: 34 49% 92%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 21 98% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 47 100% 50%;
+    --primary-foreground: 0 0% 7%;
 
-    --secondary: 35 26% 22%;
-    --secondary-foreground: 34 49% 92%;
+    --secondary: 47 100% 71%;
+    --secondary-foreground: 0 0% 7%;
 
-    --muted: 35 26% 20%;
-    --muted-foreground: 34 30% 65%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 35 26% 25%;
-    --accent-foreground: 34 49% 92%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 35 26% 25%;
-    --input: 35 26% 22%;
-    --ring: 21 98% 50%;
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 47 100% 50%;
   }
 }
 
@@ -111,11 +111,47 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight text-foreground;
+    @apply text-foreground;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  h1 {
+    font-weight: 800;
+  }
+
+  /* Large display text */
+  .text-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  /* Elegant body text */
+  p, span, div {
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-weight: 400;
+  }
+
+  /* Button and UI elements */
+  button, .btn, input, select, textarea {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  /* Nav links */
+  nav a {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
   }
 }
 
@@ -268,6 +304,130 @@
 
   .table-responsive > table {
     @apply min-w-full;
+  }
+
+  /* Luxury Typography Utilities */
+  .heading-serif {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .heading-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .text-luxury {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  .text-elegant {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    font-size: 1.125rem;
+    line-height: 1.8;
+  }
+
+  .btn-luxury {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+  }
+
+  /* Premium text shadows for headings */
+  .text-shadow-luxury {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Refined link styles */
+  .link-luxury {
+    @apply transition-all duration-300;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    position: relative;
+  }
+
+  .link-luxury::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+  }
+
+  .link-luxury:hover::after {
+    width: 100%;
+  }
+
+  /* Backdrop blur support */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Smooth navbar transitions */
+  nav {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Floating buttons animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Pulse animation for online indicator */
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+    }
+    
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+  }
+
+  /* Hide floating buttons on print */
+  @media print {
+    .fixed.bottom-6.right-6 {
+      display: none !important;
+    }
   }
 }
 
