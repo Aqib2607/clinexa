@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -88,8 +89,8 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        heading: ['Playfair Display', 'serif'],
-        display: ['Cormorant Garamond', 'serif'],
+        heading: ['Bodoni Moda', 'serif'],
+        display: ['Bodoni Moda', 'serif'],
         body: ['Montserrat', 'sans-serif'],
       },
       fontSize: {
@@ -161,5 +162,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

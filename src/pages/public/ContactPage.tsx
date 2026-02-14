@@ -138,7 +138,7 @@ export default function ContactPage() {
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            placeholder="+1 (555) 123-4567"
+                            placeholder="+880 1946-664836"
                             className="focus-ring"
                           />
                         </div>

@@ -169,19 +169,12 @@ export default function HomePage() {
       {/* Departments Section */}
       <section className="py-16 lg:py-24 bg-muted/30">
         <div className="container-wide">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
-            <div className="animate-fade-in">
-              <span className="text-primary font-medium">Our Specialties</span>
-              <h2 className="text-2xl lg:text-4xl font-bold text-foreground mt-2">
-                Medical Departments
-              </h2>
-            </div>
-            <Button asChild variant="outline" className="sm:self-end btn-transition">
-              <Link to="/departments">
-                View All Departments
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
+          <div className="text-center mb-12 animate-fade-in">
+            <span className="text-primary font-medium">Our Specialties</span>
+            <h2 className="text-2xl lg:text-4xl font-bold text-foreground mt-2 mb-6">
+              Medical Departments
+            </h2>
+
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
             {departments.map((dept, index) => (
@@ -190,25 +183,26 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <div className="text-center mt-12 animate-fade-in">
+            <Button asChild variant="outline" className="btn-transition">
+              <Link to="/departments">
+                View All Departments
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* Doctors Section */}
       <section className="py-16 lg:py-24 bg-background">
         <div className="container-wide">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
-            <div className="animate-fade-in">
-              <span className="text-primary font-medium">Expert Care</span>
-              <h2 className="text-2xl lg:text-4xl font-bold text-foreground mt-2">
-                Meet Our Doctors
-              </h2>
-            </div>
-            <Button asChild variant="outline" className="sm:self-end btn-transition">
-              <Link to="/doctors">
-                View All Doctors
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
+          <div className="text-center mb-12 animate-fade-in">
+            <span className="text-primary font-medium">Expert Care</span>
+            <h2 className="text-2xl lg:text-4xl font-bold text-foreground mt-2 mb-6">
+              Meet Our Doctors
+            </h2>
+
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
             {doctors.map((doctor, index) => (
@@ -216,6 +210,14 @@ export default function HomePage() {
                 <DoctorCard {...doctor} />
               </div>
             ))}
+          </div>
+          <div className="text-center mt-12 animate-fade-in">
+            <Button asChild variant="outline" className="btn-transition">
+              <Link to="/doctors">
+                View All Doctors
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -237,9 +239,9 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-base px-8 bg-transparent border-clinexa-secondary/50 text-clinexa-secondary hover:bg-clinexa-secondary/10 btn-transition">
-                <a href="tel:+18001234567">
+                <a href="tel:+8801946664836">
                   <Phone className="h-5 w-5 mr-2" />
-                  Call: +1 (800) 123-4567
+                  Call: +880 1946-664836
                 </a>
               </Button>
             </div>
